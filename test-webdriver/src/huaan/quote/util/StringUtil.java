@@ -5,6 +5,7 @@ package huaan.quote.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 /**
  * @ClassName: StringUtil
@@ -25,5 +26,18 @@ public class StringUtil {
 		}
 		return deString;
 	}
+
+	public static String urlEnCode(String encodeStr,String encode){
+		String enString = "";
+		try {
+			enString = URLEncoder.encode(encodeStr,"utf-8");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return enString;
+	}
+
+
 
 }

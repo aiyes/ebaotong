@@ -26,30 +26,21 @@ public class RegParsePostData {
 		// TODO Auto-generated method stub
 
 	}
-	public static String replacedParam(String deCodeString,Map<String,String> postParams){
+	public static String replacedParam(String originalString,Map<String,String> postParams){
 		  String reg = "";
 		  for(String paramName : postParams.keySet()){
 			  reg = "(\\{)([^\\{]*)"+paramName+"([^\\}]*)(\\})";//匹配 {name: 'Applicant.CAppNme',newValue: '张三',bakValue: '',value: ''}
 			  Pattern p = Pattern.compile(reg);
-			  Matcher m = p.matcher(deCodeString);
+			  Matcher m = p.matcher(originalString);
 			  if(m.find()){//匹配报文参数对象
 				  String oldParamObject = m.group(0);//获得参数对象,格式  {name: 'Applicant.CAppNme',newValue: '张三',bakValue: '',value: ''}
 				  String newParamValue = "newValue:'"+postParams.get(paramName)+"'";//前台传入的参数值,组装成格式  newValue: '新值'
 				  String newParamObject = oldParamObject.replaceFirst("(newValue:\\s?')([^']+)(')",newParamValue);//替换原来参数 {name: 'Applicant.CAppNme',newValue: '新值',bakValue: '',value: ''}
-				  deCodeString = deCodeString.replace(oldParamObject, newParamObject);
+				  originalString = originalString.replace(oldParamObject, newParamObject);
 			  }
 		  }
-		  return deCodeString;
+		  return originalString;
 	}
-	//正则截取字符
-	public static String regReplaceString(String str,String reg){
-		 String replacedString="";
-		 Pattern p = Pattern.compile(reg);
-		  Matcher m = p.matcher(str);
-		  if(m.find()){
-			  replacedString = m.group(0).replaceAll("'", "");
-		  }
-		return replacedString;
-	}
+	
 
 }
