@@ -178,7 +178,7 @@ public class ParsePostSring {
 		postParams.put("Vhl.CInqType","645001");//折旧率
 		postParams.put("Vhl.NDespRate","386004");//(
 		postParams.put("Vhl.CInspectorCde","305005002");//验车情况
-		postParams.put("Vhl.CInspectorNme","101001222");//验车人
+		postParams.put("Vhl.CInspectorNme","1010+01222");//验车人
 		postParams.put("Vhl.CInspectTm","2016-09-24");//验车时间
 		postParams.put("Vhl.CCheckResult","305012006");//验车结果
 		postParams.put("Vhl.CInspectRec","的");//验车记录
@@ -244,9 +244,8 @@ public class ParsePostSring {
 	 */
 	public static String replacedParam(String originalString,Map<String,String> postParams){
 		  for(String paramName : postParams.keySet()){
-			  String reg = "(\\{)([^\\{]*)"+paramName+"([^\\}]*)(\\})";//匹配 {name: 'Applicant.CAppNme',newValue: '张三',bakValue: '',value: ''}
-			  Pattern p = Pattern.compile(reg);
-			  Matcher m = p.matcher(originalString);
+			  String reg = "\\{[^\\{]*"+paramName+"[^\\}]*\\}";//匹配 {name: 'Applicant.CAppNme',newValue: '张三',bakValue: '',value: ''}
+			  Matcher m = createMatcher(originalString,reg);
 			  if(m.find()){//匹配报文参数对象
 				  String oldParamObject = m.group(0);//获得参数对象,格式  {name: 'Applicant.CAppNme',newValue: '张三',bakValue: '',value: ''}
 				  String newParamValue = "newValue:'"+postParams.get(paramName)+"'";//前台传入的参数值,组装成格式  newValue: '新值'
@@ -273,6 +272,22 @@ public class ParsePostSring {
 			
 		}
 	}
+	public static String  getTotalSum(String resContent){
+		String resString = "";
+		List<String> resParams = new ArrayList<String>();
+		resParams.add("SY_Base.NPrm");//商业总保额
+		for(String resParam:resParams){
+			String reg = "\\{[^\\{]*"+resParam+"[^\\}]*\\}";
+		    Matcher m = createMatcher(resContent,reg);
+		    if(m.find()){
+		    	String valueObject = m.group(0);
+		    	 resString = regString(valueObject,"\"value\":\\s?\"([^\"]+?)\"",1);//提取newValue的值
+		    	//System.out.println(resString);
+		    }
+			
+		}
+		return resString;
+	}
 	
 	public static Matcher createMatcher(String matchStr,String reg){
 		Pattern p = Pattern.compile(reg);
@@ -287,6 +302,7 @@ public class ParsePostSring {
 		  }
 		 return resultString;
 	}
+	
 	
 
 }
