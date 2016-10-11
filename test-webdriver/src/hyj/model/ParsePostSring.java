@@ -259,7 +259,8 @@ public class ParsePostSring {
 	public static void resData(String resContent){
 		String resString = "";
 		List<String> resParams = new ArrayList<String>();
-		resParams.add("SY_Base.NPrm");//商业总保额
+		resParams.add("SY_Base.NPrm");//商业总保费
+		resParams.add("SY_Base.NAmt");//商业总保额
 		resParams.add("Vhl.NActualValue");//车辆实际价值
 		for(String resParam:resParams){
 			String reg = "\\{[^\\{]*"+resParam+"[^\\}]*\\}";
