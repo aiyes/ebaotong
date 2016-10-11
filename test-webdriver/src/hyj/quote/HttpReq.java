@@ -37,10 +37,10 @@ import org.jsoup.select.Elements;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.ebtins.dto.open.CarQuoteInfoVo;
+import com.ebtins.dto.open.CarQuoteRes;
 
 import huaan.quote.util.StringUtil;
-import hyj.model.ParsePostSring;
-import hyj.util.TestConfig;
 
 /**
  * @ClassName: HttpReq
@@ -299,20 +299,48 @@ public class HttpReq {
      * @date 2016年10月11日 下午2:40:46
      */
     public static void resData(String resContent){
+    	CarQuoteRes qRes = new CarQuoteRes();
+    	qRes.setMerchantOrderId("");
+    	qRes.setStatus("");
+    	qRes.setRemark("");
+    	CarQuoteInfoVo info = new CarQuoteInfoVo();
+    	qRes.setCarQuoteInfo(info);
+    	info.setCompanyType("HUAAN");
+    	info.setInsurerName("华安保险");
+    	Map<String,String> params = new HashMap<String,String>();
 		List<String> resParams = new ArrayList<String>();
 		resParams.add("SY_Base.NPrm");//商业总保费
 		resParams.add("SY_Base.NAmt");//商业总保额
 		resParams.add("Vhl.NActualValue");//车辆实际价值
+		resParams.add("Base.CProdNo");//订单号，待确认
+		resParams.add("SY_Vhl.CQryCde");//商业险报价单号，待确认
 		for(String resParam:resParams){
 			String reg = "\\{[^\\{]*"+resParam+"[^\\}]*\\}";
 		    Matcher m = StringUtil.createMatcher(resContent,reg);
 		    if(m.find()){
 		    	String valueObject = m.group(0);
 		    	String value = StringUtil.regString(valueObject,"\"value\":\\s?\"([^\"]+?)\"",1);//提取newValue的值
+		    	params.put(resParam, value);
 		    	System.out.println(resParam+":"+value);
 		    }
 			
 		}
+		for(String name:params.keySet()){
+			if(name.equals("SY_Base.NAmt")){
+				info.setSumInsured(params.get(name));
+			}else if(name.equals("Vhl.NActualValue")){
+				info.setActualValue(params.get(name));
+			}else if(name.equals("Base.CProdNo")){
+				qRes.setOrderId(params.get(name));
+				info.setOrderId(params.get(name));
+			}else if(name.equals("SY_Vhl.CQryCde")){
+				info.setQuoteNo(params.get(name));
+			}else if(name.equals("SY_Base.NPrm")){
+				info.setSumBiPremium(Double.parseDouble(params.get(name)));
+			}
+		}
+		String json = JSON.toJSONString(qRes);
+		System.out.println(json);
 	}
     /**
      * @Description: TODO(根据参数名查找post1报文，获取参数名的值)

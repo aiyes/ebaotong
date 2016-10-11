@@ -3,9 +3,17 @@
  */
 package hyj.quote;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
+
+import com.ebtins.dto.open.CarLicenseInfoVo;
+import com.ebtins.dto.open.CarModelInfoVo;
+import com.ebtins.dto.open.CarOwnerInfoVo;
+import com.ebtins.dto.open.CarQuoteInsItemVo;
+import com.ebtins.dto.open.CarQuoteReq;
 
 import huaan.quote.util.StringUtil;
 
@@ -25,6 +33,8 @@ public class ParamReplace {
 	 * @date 2016年9月27日 上午10:01:44
 	 */
 	public static String getNewDwData(String originalDwData,Map<String,String> postParams){
+		CarQuoteReq req = getReqInfo();
+		
 		postParams.put("Base.COrigType","0");//原方案续保
 		postParams.put("JQ_Base.CRenewMrk","0");//续保标志(交)
 		postParams.put("SY_Base.CRenewMrk","0");//续保标志(商)
@@ -74,13 +84,9 @@ public class ParamReplace {
 		postParams.put("Base.COprTyp","0");//保单生成
 		postParams.put("Base.IsNofee","0");//是否不见费
 		postParams.put("Base.CFeeFlag","1");//见费出单标志
-		postParams.put("Vhlowner.COwnerNme","张三");//姓名
+		
 		postParams.put("Vhlowner.CUnitAttrib","377001");//单位性质
 		postParams.put("Vhlowner.COwnerCls","376001");//车主类别
-		postParams.put("Vhlowner.CCertfCls","120001");//证件类型
-		postParams.put("Vhlowner.CCertfCde","450722198910122856");//证件号码
-		postParams.put("Vhlowner.CTel","15296281584");//电话
-		postParams.put("Vhlowner.CClntAddress","广东深圳");//地址
 		postParams.put("Vhlowner.CDrvSex","106001");//车主性别
 		postParams.put("Vhlowner.NDrvownerAge","27");//车主年龄
 		postParams.put("Insured.NSeqNo","1");//客户编号
@@ -101,10 +107,7 @@ public class ParamReplace {
 		postParams.put("Applicant.CCountry","193001");//国籍
 		postParams.put("Applicant.CTel","15296281584");//电话
 		postParams.put("Applicant.CClntAddr","广东深圳");//地址
-		postParams.put("Vhl.CFrmNo","LVGBF53K0EG104355");//车架号
-		postParams.put("Vhl.CEngNo","H357719");//发动机号
-		postParams.put("Vhl.CPlateNo","粤BX13G2");//号牌号码
-		postParams.put("Vhl.CPlateTyp","01");//号牌种类
+		
 		postParams.put("Vhl.CPlateColor","1");//车牌颜色
 		postParams.put("Vhl.CBrandId","KMD1078GZF");//车型代码
 		postParams.put("Vhl.CModelCde","GTM7251GB");//
@@ -118,7 +121,6 @@ public class ParamReplace {
 		postParams.put("Vhl.CVhlTyp","");//车辆类型
 		postParams.put("Vhl.CRegVhlTyp","K32");//车辆类型描述
 		postParams.put("Vhl.CIsTipperFlag","0");//是否自卸车
-		postParams.put("Vhl.CFstRegYm","2016-10-08");//注册日期
 		postParams.put("Vhl.NNewPurchaseValue","1191000");//新车购置价
 		postParams.put("Vhl.NActualValue","191000");//实际价值
 		postParams.put("Vhl.CIndustryModelCode","BGQGKNUD0006");//行业车型编码
@@ -126,7 +128,6 @@ public class ParamReplace {
 		postParams.put("Vhl.CLoanVehicleFlag","1");//车贷投保多年
 		postParams.put("Vhl.CDevice1Mrk","0");//是否过户投保
 		postParams.put("Vhl.CYl4","303011002");//玻璃类型
-		postParams.put("Vhl.CProdPlace","1");//车辆产地
 		postParams.put("Vhl.CAmtType","943003");//保额确定类型
 		postParams.put("Vhl.CInqType","645002");//折旧率
 		postParams.put("Vhl.NDespRate","386004");//(
@@ -145,12 +146,13 @@ public class ParamReplace {
 		postParams.put("Vhl.NNodamageYears","0");//跨省首年投保未出险证明年数
 		postParams.put("Vhl.CFrmNoUnusualMrk","0");//车架号异常标志
 		postParams.put("Vhl.CVhlQueryFla","1");//车辆查询标志
+		
+		
 		postParams.put("SY_PrmCoef.NTgtFld1","1.0");//系数
 		postParams.put("SY_PrmCoef.NTgtFld2","1.0");//系数
 		postParams.put("SY_PrmCoef.NTgtFld3","1.0");//系数
 		postParams.put("SY_PrmCoef.NTgtFld4","1.0");//系数
 		postParams.put("SY_PrmCoef.NTgtFld23","1.0");//系数
-		postParams.put("SY_PrmCoef.CRunArea","389001");//行驶区域
 		postParams.put("SY_PrmCoef.NTgtFld5","1.0");//系数
 		postParams.put("SY_PrmCoef.NTgtFld10","1.0");//系数
 		postParams.put("SY_PrmCoef.NTgtFld7","1.0");//系数
@@ -169,12 +171,15 @@ public class ParamReplace {
 		postParams.put("SY_PrmCoef.NTgtFld13","1.00");//选用系数合计
 		postParams.put("Timmer.COprNm","游嘉琦");//录单人
 		postParams.put("Timmer.COprCde","101154139");//
-		postParams.put("Timmer.JTInsrncBgnTm","2016-10-09 00:00:00");//保险起止期
-		postParams.put("Timmer.JTInsrncEndTm","2017-10-08 23:59:59");//
+		
+		postParams.put("Timmer.JTInsrncBgnTm",req.getStartDateCI());//保险起止期
+		postParams.put("Timmer.JTInsrncEndTm",req.getEndDateCI());//
 		postParams.put("Timmer.JTotalDays","365");//共
 		postParams.put("Timmer.JNRatioCoef","1.0");//短期费率系数
-		postParams.put("Timmer.BTInsrncBgnTm","2016-11-09 00:00:00");//保险起止期
-		postParams.put("Timmer.BTInsrncEndTm","2017-10-08 23:59:59");//
+		postParams.put("Timmer.BTInsrncBgnTm",req.getStartDateBI());//保险起止期
+		postParams.put("Timmer.BTInsrncEndTm",req.getEndDateBI());//
+		postParams.put("SY_PrmCoef.CRunArea",req.getRunAreaCode());//行驶区域--行驶区域代码
+		
 		postParams.put("Timmer.BTotalDays","365");//共
 		postParams.put("Timmer.BNRatioCoef","1.0");//短期费率系数
 		postParams.put("Timmer.TAppTm","2016-11-08");//投保日期
@@ -183,6 +188,26 @@ public class ParamReplace {
 		postParams.put("Pay.NTms","1");//
 		postParams.put("JQ_Pay.NPayablePrm","0");//
 		postParams.put("SY_Pay.NPayablePrm","0");//
+		
+		//车主基本信息
+		postParams.put("Vhlowner.COwnerNme",req.getCarOwnerInfo().getCarOwner());//姓名
+		postParams.put("Vhlowner.CCertfCls",req.getCarOwnerInfo().getOwnerIdType());//证件类型
+		postParams.put("Vhlowner.CCertfCde",req.getCarOwnerInfo().getOwnerIdentifyNumber());//证件号码
+		postParams.put("Vhlowner.CTel",req.getCarOwnerInfo().getOwnerPhone());//电话
+		postParams.put("Vhlowner.CClntAddress",req.getCarOwnerInfo().getOwnerAddr());//地址
+		
+		//行驶证及相关行驶信息
+		postParams.put("Vhl.CPlateNo",req.getCarLicenseInfo().getLicenseNo());//号牌号码
+		postParams.put("Vhl.CEngNo",req.getCarLicenseInfo().getEngineNo());//发动机号
+		postParams.put("Vhl.CFstRegYm",req.getCarLicenseInfo().getEnrollDate());//注册日期 --车辆初登日期
+		postParams.put("Vhl.CFrmNo",req.getCarLicenseInfo().getVin());//车架号
+		//postParams.put("Vhl.CFrmNo",req.getCarLicenseInfo().getVin());//过户车标志
+		//postParams.put("Vhl.CFrmNo",req.getCarLicenseInfo().getVin());//过户日期
+		//postParams.put("Vhl.CFrmNo",req.getCarLicenseInfo().getVin());//行驶证车主性质
+		//postParams.put("Vhl.CFrmNo",req.getCarLicenseInfo().getVin());//所有人性质
+		//postParams.put("Vhl.CFrmNo",req.getCarLicenseInfo().getVin());//车辆使用性质
+		postParams.put("Vhl.CProdPlace",req.getCarLicenseInfo().getCountryNature());//车辆产地--国别性质
+		postParams.put("Vhl.CPlateTyp",req.getCarLicenseInfo().getLicenseType());//号牌种类
 
         String newString = replacedParam(originalDwData, postParams);
         return newString;
@@ -210,6 +235,61 @@ public class ParamReplace {
 			  }
 		  }
 		  return originalString;
+	}
+	
+	public static CarQuoteReq getReqInfo(){
+		CarQuoteReq req = new CarQuoteReq();
+		req.setCompanyType("");
+		//req.setCompanyTypes("");//保险公司类型
+		//req.setInsurerIds("");//保险公司编号数组
+		req.setLicenseFlag(0);//牌照标志
+		req.setIsRenewal(0);//是否续保
+		req.setStartDateBI("2016-11-09 00:00:00");//商业险起保日期
+		req.setEndDateBI("2017-10-08 23:59:59");//商业险终保日期
+		req.setStartDateCI("2016-10-09 00:00:00");//交强险起保日期
+		req.setEndDateCI("2017-10-08 23:59:59");//交强险终保日期
+		req.setRunArea("389001");//行驶区域代码
+		//req.setFileList("")//附件列表
+		
+		CarModelInfoVo modelInfo = new CarModelInfoVo();
+		req.setCarModelInfo(modelInfo);
+		
+		
+		//投保险种明细
+		List<CarQuoteInsItemVo> itemList = new ArrayList<CarQuoteInsItemVo>();
+		CarQuoteInsItemVo insItem = new CarQuoteInsItemVo();
+		itemList.add(insItem);
+		req.setCarQuoteInsItemList(itemList);
+		insItem.setKindCode("");//险别代码
+		insItem.setInsuredAmount("");//每标的保额/限额
+		insItem.setDeductibleFlag(0);//不计免赔特约险购买标志
+		
+		
+		//行驶证及相关行驶信息
+		CarLicenseInfoVo licenInfo = new CarLicenseInfoVo();
+		req.setCarLicenseInfo(licenInfo);
+		licenInfo.setLicenseNo("粤BX13G2");//号牌号码
+		licenInfo.setEngineNo("H357719");//发动机号
+		licenInfo.setEnrollDate("2016-10-08");//车辆初登日期
+		licenInfo.setVin("LVGBF53K0EG104355");//车架号
+		licenInfo.setChgOwnerFlag("");//过户车标志
+		licenInfo.setChgOwnerDate("");//过户日期
+		licenInfo.setOwnerNature("");//行驶证车主性质
+		licenInfo.setCustomerType("");//所有人性质
+		licenInfo.setUseNature(1);//车辆使用性质
+		licenInfo.setCountryNature("1");//国别性质
+		licenInfo.setLicenseType("01");//号牌种类
+		
+		//车主基本信息
+		CarOwnerInfoVo ownerInfo = new CarOwnerInfoVo();
+		req.setCarOwnerInfo(ownerInfo);
+		ownerInfo.setCarOwner("张三");//车主姓名
+		ownerInfo.setOwnerIdType("120001");//车主证件类型
+		ownerInfo.setOwnerIdentifyNumber("450722198910122856");//车主证件号码
+		ownerInfo.setOwnerPhone("15296281584");//车主手机号码
+		ownerInfo.setOwnerAddr("广东深圳");//车主详细地址信息
+		
+		return req;
 	}
 
 }
