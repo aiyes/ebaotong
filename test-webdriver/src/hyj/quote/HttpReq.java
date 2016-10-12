@@ -237,6 +237,7 @@ public class HttpReq {
         
         //post:点击保费计算按钮
          String post1Content=post(qModelUrl,UTF8, cookies,referer,post1_cust_data,post1String,"calcPremiumSino");
+         System.out.println(post1Content);
          getResultMsg(post1Content);
          
         //get:点击保费计算后第一次弹出框
@@ -256,10 +257,10 @@ public class HttpReq {
         //String get2_string =get("https://webpolicy.sinosafe.com.cn/pcis/policy/universal/quickapp/jsp/open_quick_spec_for_auto.jsp?","UTF-8",cookies);
       
         //System.out.println("-----------返回报文----------");	
-        //System.out.println(post3Content);
+       
         resData(post3Content);
         
-        return post3Content;
+        return post1Content;
        
     }
     /**

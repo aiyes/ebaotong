@@ -35,7 +35,7 @@ public class ParamReplace {
 	public static String getNewDwData(String originalDwData,Map<String,String> postParams){
 		CarQuoteReq req = getReqInfo();
 		
-		postParams.put("Base.COrigType","0");//原方案续保
+		/*postParams.put("Base.COrigType","0");//原方案续保
 		postParams.put("JQ_Base.CRenewMrk","0");//续保标志(交)
 		postParams.put("SY_Base.CRenewMrk","0");//续保标志(商)
 		postParams.put("Base.CProdNo","0380");//
@@ -171,7 +171,7 @@ public class ParamReplace {
 		postParams.put("SY_PrmCoef.NTgtFld13","1.00");//选用系数合计
 		postParams.put("Timmer.COprNm","游嘉琦");//录单人
 		postParams.put("Timmer.COprCde","101154139");//
-		
+*/		
 		postParams.put("Timmer.JTInsrncBgnTm",req.getStartDateCI());//保险起止期
 		postParams.put("Timmer.JTInsrncEndTm",req.getEndDateCI());//
 		postParams.put("Timmer.JTotalDays","365");//共
@@ -251,6 +251,7 @@ public class ParamReplace {
 		req.setRunArea("389001");//行驶区域代码
 		//req.setFileList("")//附件列表
 		
+		//车型信息
 		CarModelInfoVo modelInfo = new CarModelInfoVo();
 		req.setCarModelInfo(modelInfo);
 		
