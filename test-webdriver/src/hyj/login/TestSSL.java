@@ -190,7 +190,7 @@ public class TestSSL {
         Map<String,String> loginParams=new HashMap<String, String>();
         loginParams.put("securityCheckURL", el2.attr("name"));
         loginParams.put("j_username", userCode);
-        loginParams.put("j_password", "QIqi456");
+        loginParams.put("j_password", "QIqi789");
         loginParams.put("valiCode", voliCode);
         
         post(loginUrl,loginParams, UTF8,cookies,"https://webpolicy.sinosafe.com.cn/pcis/core/login/realLogin.jsp");

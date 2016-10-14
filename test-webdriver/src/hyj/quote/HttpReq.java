@@ -2,6 +2,7 @@
 package hyj.quote;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -38,9 +39,14 @@ import org.jsoup.select.Elements;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ebtins.dto.open.CarQuoteInfoVo;
+import com.ebtins.dto.open.CarQuoteInsItemVo;
 import com.ebtins.dto.open.CarQuoteRes;
 
 import huaan.quote.util.StringUtil;
+import hyj.model.AttributeVo;
+import hyj.model.DataObjVo;
+import hyj.model.DwData;
+import hyj.model.ResContent;
 
 /**
  * @ClassName: HttpReq
@@ -99,7 +105,7 @@ public class HttpReq {
 		    HttpGet httpGet = new HttpGet(url);
 		    if(cookies!=null) httpGet.setHeader("Cookie", cookies);
 		   		  
-		    //System.out.println("get请求地址："+url);  
+		    System.out.println("get请求地址："+url);  
 		      
 		    //设置header信息  
 		    //指定报文头【Content-type】、【User-Agent】
@@ -109,7 +115,7 @@ public class HttpReq {
 		    CloseableHttpResponse response = client.execute(httpGet);  
 		    //获取结果实体  
 		    HttpEntity entity = response.getEntity();  
-		    //System.out.println("get返回："+response.getStatusLine());
+		    System.out.println("get返回："+response.getStatusLine());
 		    if (entity != null) {  
 		        //按指定编码转换结果实体为String类型  
 		        body = EntityUtils.toString(entity, encoding);
@@ -153,8 +159,8 @@ public class HttpReq {
 		    //设置参数到请求对象中  
 		    httpPost.setEntity(new UrlEncodedFormEntity(nvps, encoding));  
 		  
-		    //System.out.println("post请求地址："+url);  
-		    //System.out.println("post请求参数："+nvps.toString());  
+		    System.out.println("post请求地址："+url);  
+		    System.out.println("post请求参数："+nvps.toString());  
 		      
 		    //设置header信息  
 		    //指定报文头【Content-type】、【User-Agent】  
@@ -165,7 +171,7 @@ public class HttpReq {
 		    CloseableHttpResponse response = client.execute(httpPost);  
 		    //获取结果实体  
 		    HttpEntity entity = response.getEntity();  
-		    //System.out.println("post返回："+response.getStatusLine());
+		    System.out.println("post返回："+response.getStatusLine());
 		    if (entity != null) {  
 		        //按指定编码转换结果实体为String类型  
 		        body = EntityUtils.toString(entity, encoding);
@@ -225,7 +231,7 @@ public class HttpReq {
         Map<String,String> loginParams=new HashMap<String, String>();
         loginParams.put("securityCheckURL", el2.attr("name"));
         loginParams.put("j_username", userCode);
-        loginParams.put("j_password", "QIqi456");
+        loginParams.put("j_password", "QIqi789");
         loginParams.put("valiCode", voliCode);
         post(loginUrl,loginParams, UTF8,cookies,"https://webpolicy.sinosafe.com.cn/pcis/core/login/realLogin.jsp");
         //查询保费
@@ -237,8 +243,8 @@ public class HttpReq {
         
         //post:点击保费计算按钮
          String post1Content=post(qModelUrl,UTF8, cookies,referer,post1_cust_data,post1String,"calcPremiumSino");
-         System.out.println(post1Content);
-         getResultMsg(post1Content);
+         //System.out.println(post1Content);
+         String msg1 = getResultMsg(post1Content);
          
         //get:点击保费计算后第一次弹出框
         String get1_string =get("https://webpolicy.sinosafe.com.cn/pcis/jsp/panel/repeat_insure_info_newC.jsp","UTF-8",cookies);
@@ -247,7 +253,7 @@ public class HttpReq {
         //post2String = repCvrgAndParam(post2String,post1Content,getPost1ContentParamValue(post1Content));
         //post:第一次弹出框点击确认后post
         String post2Content = post(qModelUrl,UTF8,cookies,referer,post2_cust_data,getNewPostByBackContent(post1Content),"calcPremiumSino");
-        getResultMsg(post2Content);
+        String msg2 = getResultMsg(post2Content);
         
         //post：保费计算成功，返回数据
         //post3_dw_data = repCvrgAndParam(post3_dw_data,post2Content,getPost2ContentParamValue(post2Content));
@@ -258,7 +264,7 @@ public class HttpReq {
       
         //System.out.println("-----------返回报文----------");	
        
-        resData(post3Content);
+        resData(post3Content,msg1+";"+msg2);
         
         return post1Content;
        
@@ -271,14 +277,27 @@ public class HttpReq {
      * @date 2016年10月11日 上午10:37:28
      */
     public static String getNewPostByBackContent(String content){
+    	
+    	/**
+    	 * json字符转为ResContent对象，获取属性“WEB_DATA”值
+    	 */
+		ResContent resContent = (ResContent) JSON.parseObject(content,ResContent.class);
+		List<DwData> dwDatas = resContent.getWEB_DATA();
+		String postStr = JSON.toJSONString(dwDatas);
+		return postStr;
+    	
+    	/*System.out.println("content-->"+content);
 		String newsStr = content.replace("\"syReinsureItemList\":\"", "\"syReinsureItemList\":")//去除syReinsureItemList属性值后面左双引号，否则无法转换成json
 								.replace("\",\"question\"", ",\"question\"")//去除syReinsureItemList属性右双引号
 								.replace("\\", "")//去除\
 								.replaceAll(",\"text\":\"[^\"]*\"", "")//去除 ,"text": ""
 								.replaceAll("\\{[^\\{]*SY_Base\\.CConnectFlag[^\\}]*\\}", "{name:'SY_Base.CConnectFlag',newValue:'1',bakValue:'',value:''}");//置SY_Base.CConnectFla的newValue值为1
+		//System.out.println("newsStr-->"+newsStr);
 		JSONObject jo = JSON.parseObject(newsStr);
-		String newPostStr = jo.getString("WEB_DATA");    	
-		return newPostStr;
+		String newPostStr = jo.getString("WEB_DATA");   
+		System.out.println("newPostStr-->"+newPostStr);
+		System.out.println("postStr-->"+postStr);
+		return newPostStr;*/
     }
     /**
      * @Description: TODO(获取报文状态信息)
@@ -288,9 +307,9 @@ public class HttpReq {
      * @date 2016年10月11日 下午2:39:32
      */
     public static String getResultMsg(String content){
-    	String reg = "[\"|'|\\\"]RESULT_MSG[\"|'|\\\"]:[\"|'|\\\"]([^'\"\\\"]+)[\"|'|\\\"]";
-    	String msg = StringUtil.regString(content,reg, 1);
-    	System.out.println(msg);
+    	ResContent rc = JSON.parseObject(content, ResContent.class);
+    	String msg = rc.getRESULT_MSG();
+    	System.out.println("---------------->"+msg);
     	return msg;
     }
     /**
@@ -299,22 +318,45 @@ public class HttpReq {
      * @author yejie.huang
      * @date 2016年10月11日 下午2:40:46
      */
-    public static void resData(String resContent){
+    public static void resData(String resContent,String msg){
+    	//ResContent rc = JSON.parseObject(rescontent1, ResContent.class);
+    	
     	CarQuoteRes qRes = new CarQuoteRes();
     	qRes.setMerchantOrderId("");
-    	qRes.setStatus("");
-    	qRes.setRemark("");
+    	qRes.setStatus("1");
+    	qRes.setRemark(msg);
+    	
     	CarQuoteInfoVo info = new CarQuoteInfoVo();
-    	qRes.setCarQuoteInfo(info);
     	info.setCompanyType("HUAAN");
     	info.setInsurerName("华安保险");
-    	Map<String,String> params = new HashMap<String,String>();
+    	info.setQuoteStatus(1);
+    	info.setCarQuoteInsItemList(getInsItemList(resContent));
+    	
+    	qRes.setCarQuoteInfo(info);
+    	
+    	/**
+    	 * 需要从报文获取值的参数名
+    	 */
 		List<String> resParams = new ArrayList<String>();
 		resParams.add("SY_Base.NPrm");//商业总保费
 		resParams.add("SY_Base.NAmt");//商业总保额
+		resParams.add("SY_Base.NPrmTax");//
+		resParams.add("SY_Base.NTax");//
 		resParams.add("Vhl.NActualValue");//车辆实际价值
 		resParams.add("Base.CProdNo");//订单号，待确认
 		resParams.add("SY_Vhl.CQryCde");//商业险报价单号，待确认
+		
+		resParams.add("JQ_Base.NPrm");//交强总保费
+		resParams.add("JQ_Base.NAmt");//交强总保额
+		resParams.add("JQ_Base.NPrmTax");//
+		resParams.add("JQ_Base.NTax");//
+		
+		resParams.add("VsTax.NAggTaxAmt");//税金合计
+		
+		/**
+		 * 根据参数名获取参数值，存入Map<String,String> params集合
+		 */
+		Map<String,String> params = new HashMap<String,String>();
 		for(String resParam:resParams){
 			String reg = "\\{[^\\{]*"+resParam+"[^\\}]*\\}";
 		    Matcher m = StringUtil.createMatcher(resContent,reg);
@@ -326,6 +368,9 @@ public class HttpReq {
 		    }
 			
 		}
+		/**
+		 * 值存入对象CarQuoteInfoVo info
+		 */
 		for(String name:params.keySet()){
 			if(name.equals("SY_Base.NAmt")){
 				info.setSumInsured(params.get(name));
@@ -343,6 +388,63 @@ public class HttpReq {
 		String json = JSON.toJSONString(qRes);
 		System.out.println(json);
 	}
+    /**
+     * @Description: TODO(分析返回报文获取险种明细)
+     * @param resContent
+     * @return 险种明细
+     * @author yejie.huang
+     * @date 2016年10月13日 下午3:01:24
+     */
+    public static List<CarQuoteInsItemVo> getInsItemList(String resContent){
+    	
+    	/**
+    	 * json字符转为ResContent对象，获取属性“WEB_DATA”值
+    	 */
+		ResContent content = (ResContent) JSON.parseObject(resContent,ResContent.class);
+		List<DwData> dwDatas = content.getWEB_DATA();
+		
+		/**
+		 * 取得返回报文dwName为prodDef.vhl.Cvrg_DW对象
+		 */
+		List<DataObjVo> dataObjVoList=null;
+		for(DwData dwData :dwDatas){
+			if(dwData.getDwName().equals("prodDef.vhl.Cvrg_DW")){
+			  dataObjVoList = dwData.getDataObjVoList();
+			  break;
+			}
+		}
+		
+		/**
+		 * 循环获取报文险别信息
+		 */
+		List<CarQuoteInsItemVo>  insItems= new ArrayList<CarQuoteInsItemVo>();
+		for(DataObjVo objVo :dataObjVoList){
+			CarQuoteInsItemVo insItem = new CarQuoteInsItemVo();
+			BigDecimal ny112 = null,nPrm = null;
+			for(AttributeVo attrVo :objVo.getAttributeVoList()){
+				if(attrVo.getName().equals("Cvrg.CCvrgNo")){//险别代码
+					insItem.setKindCode(attrVo.getNewValue());
+				}else if(attrVo.getName().equals("Cvrg.NYl12")){//不计免赔保费
+					ny112 = new BigDecimal(attrVo.getNewValue().equals("")?"0":attrVo.getNewValue());  
+				}else if(attrVo.getName().equals("Cvrg.NPrm")){//折后保费
+					nPrm = new BigDecimal(attrVo.getNewValue().equals("")?"0":attrVo.getNewValue());  
+				}else if(attrVo.getName().equals("Cvrg.NAmt")){//保额
+					insItem.setInsuredAmount(attrVo.getNewValue());
+				}else if(attrVo.getName().equals("Cvrg.CDductMrk")){//不计免赔标志
+					insItem.setDeductibleFlag(attrVo.getNewValue().equals("")?0:Integer.parseInt(attrVo.getNewValue()));
+				}
+				
+			}
+			
+			//单项保费 = 不计免赔费 + 折后保费
+			insItem.setPremium(ny112.add(nPrm).toString());
+			insItem.setCategory(1);
+			if(!insItem.getKindCode().equals("030119")){
+				insItems.add(insItem);
+			}
+		}
+    	return insItems;
+    }
     /**
      * @Description: TODO(根据参数名查找post1报文，获取参数名的值)
      * @param content post1返回报文

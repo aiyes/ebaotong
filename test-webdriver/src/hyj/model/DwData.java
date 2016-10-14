@@ -14,6 +14,8 @@ public class DwData implements Serializable {
 	
 	private static final long serialVersionUID = 5222694668336563L;
 	
+	private Boolean isFilter1;
+	
 	private Boolean isFilter;
 	
 	private String dwType;

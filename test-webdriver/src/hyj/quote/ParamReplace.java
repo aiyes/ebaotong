@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
+import com.alibaba.fastjson.JSON;
 import com.ebtins.dto.open.CarLicenseInfoVo;
 import com.ebtins.dto.open.CarModelInfoVo;
 import com.ebtins.dto.open.CarOwnerInfoVo;
@@ -16,6 +17,10 @@ import com.ebtins.dto.open.CarQuoteInsItemVo;
 import com.ebtins.dto.open.CarQuoteReq;
 
 import huaan.quote.util.StringUtil;
+import hyj.model.AttributeVo;
+import hyj.model.DataObjVo;
+import hyj.model.DwData;
+import hyj.util.TestConfig;
 
 /**
  * @ClassName: ParamReplace
@@ -35,7 +40,7 @@ public class ParamReplace {
 	public static String getNewDwData(String originalDwData,Map<String,String> postParams){
 		CarQuoteReq req = getReqInfo();
 		
-		/*postParams.put("Base.COrigType","0");//原方案续保
+		postParams.put("Base.COrigType","0");//原方案续保
 		postParams.put("JQ_Base.CRenewMrk","0");//续保标志(交)
 		postParams.put("SY_Base.CRenewMrk","0");//续保标志(商)
 		postParams.put("Base.CProdNo","0380");//
@@ -109,12 +114,12 @@ public class ParamReplace {
 		postParams.put("Applicant.CClntAddr","广东深圳");//地址
 		
 		postParams.put("Vhl.CPlateColor","1");//车牌颜色
-		postParams.put("Vhl.CBrandId","KMD1078GZF");//车型代码
+		postParams.put("Vhl.CBrandId","KMD1078GZF");// 车型代码/厂牌车型
 		postParams.put("Vhl.CModelCde","GTM7251GB");//
 		postParams.put("Vhl.CModelNme","丰田GTM7251GB轿车");//()
 		postParams.put("Vhl.NSeatNum","5");//核定载客数
 		postParams.put("Vhl.NDisplacement","2.494");//排量
-		postParams.put("Vhl.CUsageCde","309003");//使用性质
+		//postParams.put("Vhl.CUsageCde","309003");//使用性质--投保查询====>平台返回错误:示范条款保单承保时车辆使用性质不允许上传
 		postParams.put("Vhl.CUseAtr3","343002");//所属性质
 		postParams.put("Vhl.CCarAtr","384001");//经营属性
 		postParams.put("Vhl.CVhlSubTyp","308003");//车辆种类
@@ -171,10 +176,12 @@ public class ParamReplace {
 		postParams.put("SY_PrmCoef.NTgtFld13","1.00");//选用系数合计
 		postParams.put("Timmer.COprNm","游嘉琦");//录单人
 		postParams.put("Timmer.COprCde","101154139");//
-*/		
+		
+		
+		//影响交强结果参数
 		postParams.put("Timmer.JTInsrncBgnTm",req.getStartDateCI());//保险起止期
 		postParams.put("Timmer.JTInsrncEndTm",req.getEndDateCI());//
-		postParams.put("Timmer.JTotalDays","365");//共
+		postParams.put("Timmer.JTotalDays","365");//共   --不影响交强计算结果
 		postParams.put("Timmer.JNRatioCoef","1.0");//短期费率系数
 		postParams.put("Timmer.BTInsrncBgnTm",req.getStartDateBI());//保险起止期
 		postParams.put("Timmer.BTInsrncEndTm",req.getEndDateBI());//
@@ -208,12 +215,30 @@ public class ParamReplace {
 		//postParams.put("Vhl.CFrmNo",req.getCarLicenseInfo().getVin());//车辆使用性质
 		postParams.put("Vhl.CProdPlace",req.getCarLicenseInfo().getCountryNature());//车辆产地--国别性质
 		postParams.put("Vhl.CPlateTyp",req.getCarLicenseInfo().getLicenseType());//号牌种类
+		
+		postParams.put("Base.CProdNo","0380_0360");//
 
-        String newString = replacedParam(originalDwData, postParams);
+        String newString = replacedParam(originalDwData, postParams).replace("undefined", "").replace("UNDEFINED", "");
+        
+        String cvrgDwObjstr = TestConfig.getDwData().get("cvrgDwObj").toString();
+        String cvrg119 = TestConfig.getDwData().get("cvrg119").toString();
+        //newString = replaceCrvg(newString,cvrgDwObjstr,cvrg119,req.getCarQuoteInsItemList());
+        
+        List<DwData> dwDatas = JSON.parseArray(newString, DwData.class);
+        System.out.println("newstr1__"+newString);
+        for(DwData dw:dwDatas){
+        	if(dw.getDwName().equals("prodDef.vhl.Cvrg_DW")){
+        		dw.setDataObjVoList(replaceCrvg1(cvrgDwObjstr,cvrg119,req.getCarQuoteInsItemList()));
+        	}
+        }
+        
+        newString = JSON.toJSONString(dwDatas);
+        
+        System.out.println("newstr2__"+newString);
         return newString;
 	}
 	/**
-	 * @Description: TODO(替换报文参数值)
+	 * @Description: TODO(替换报文参数值,除dwName: 'prodDef.vhl.Cvrg_DW'的cvrg前缀参数外)
 	 * @param originalString 原始报文
 	 * @param postParams 参数
 	 * @return 替换后的报文
@@ -236,6 +261,92 @@ public class ParamReplace {
 		  }
 		  return originalString;
 	}
+	/**
+	 * @Description: TODO(替换报文参数值,cvrg部分)
+	 * @param dwDataTemplate 参数模板，模板含有$prodDef.vhl.Cvrg_DW字符，便于定位替换
+	 * @param cvrgDwObjstr 替换$prodDef.vhl.Cvrg_DW的字符
+	 * @param cvrg119 不计免赔率字符，当险种里有一项购买了不计免赔，报文需含此字符
+	 * @param insItems 投保险种明细
+	 * @return 替换后的报文
+	 * @author yejie.huang
+	 * @date 2016年10月13日 上午10:53:57
+	 */
+	public static String replaceCrvg(String dwDataTemplate,String cvrgDwObjstr,String cvrg119,List<CarQuoteInsItemVo> insItems){
+		int indexNo=0;
+		boolean flag=true;
+		StringBuffer sb = new StringBuffer();
+		for(CarQuoteInsItemVo insItem : insItems){
+			
+			/**
+			 * 当险种里有一项购买了不计免赔，加入此字符
+			 */
+			if(flag&&insItem.getDeductibleFlag()==1){
+				sb.append(cvrg119).append(",");
+				flag = false;
+			}
+			
+			/**
+			 * 替换insItems值，险别代码、保额、不计免赔特约险购买标志
+			 */
+			indexNo+=1;
+			String cvrg = cvrgDwObjstr.replace("index:'1'", "index:'"+indexNo+"'")
+					 .replaceAll("\\{[^\\{]*'Cvrg\\.NSeqNo'[^\\}]*\\}", "{name:'Cvrg.NSeqNo',newValue:'"+indexNo+"',bakValue:'',value:''}")
+					 .replaceAll("\\{[^\\{]*'Cvrg\\.CCvrgNo'[^\\}]*\\}", "{name:'Cvrg.CCvrgNo',newValue:'"+insItem.getKindCode()+"',bakValue:'',value:''}")//险别代码
+			         .replaceAll("\\{[^\\{]*'Cvrg\\.NAmt'[^\\}]*\\}", "{name:'Cvrg.NAmt',newValue:'"+insItem.getInsuredAmount()+"',bakValue:'',value:''}")//险别保额/限额
+			         .replaceAll("\\{[^\\{]*'Cvrg\\.CDductMrk'[^\\}]*\\}", "{name:'Cvrg.CDductMrk',newValue:'"+insItem.getDeductibleFlag()+"',bakValue:'',value:''}");//不计免赔特约险购买标志
+		   sb.append(cvrg).append(",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		String newDwData = dwDataTemplate.replace("$prodDef.vhl.Cvrg_DW",sb.toString());
+		
+		/**
+		 * 交强替换
+		 */
+		if(10==1){
+			String jqCvrg = TestConfig.getDwData().get("jqCvrg").toString();
+			newDwData = newDwData.replace("$prodDef.vhl.CvrgJQ_DW",jqCvrg);
+		}else{
+			newDwData = newDwData.replace("$prodDef.vhl.CvrgJQ_DW","");
+		}
+		return newDwData;
+	}
+	
+	public static List<DataObjVo> replaceCrvg1(String cvrgDwObjstr,String cvrg119,List<CarQuoteInsItemVo> insItems){
+		DataObjVo objVo119 = JSON.parseObject(cvrg119, DataObjVo.class);
+		
+		List<DataObjVo> objVos = new ArrayList<DataObjVo>();
+		int indexNo=0;
+		boolean flag=true;
+		for(CarQuoteInsItemVo insItem : insItems){
+			
+			/**
+			 * 当险种里有一项购买了不计免赔
+			 */
+			if(flag&&insItem.getDeductibleFlag()==1){
+				objVos.add(objVo119);
+				flag = false;
+			}
+			
+			indexNo+=1;
+			DataObjVo objVo = JSON.parseObject(cvrgDwObjstr, DataObjVo.class);
+			objVo.setIndex(indexNo);
+			List<AttributeVo> attVos = objVo.getAttributeVoList();;
+			for(AttributeVo attvo :attVos){
+				if(attvo.getName().equals("Cvrg.NSeqNo")){
+					attvo.setNewValue(String.valueOf(indexNo));//序号
+				}else if(attvo.getName().equals("Cvrg.CCvrgNo")){
+					attvo.setNewValue(insItem.getKindCode());//险别代码
+				}else if(attvo.getName().equals("Cvrg.NAmt")){
+					attvo.setNewValue(insItem.getInsuredAmount());//险别保额/限额
+				}else if(attvo.getName().equals("Cvrg.CDductMrk")){
+					attvo.setNewValue(String.valueOf(insItem.getDeductibleFlag()));//不计免赔特约险购买标志
+				}
+			}
+			objVos.add(objVo);
+		}
+		System.out.println("000"+JSON.toJSONString(objVos));
+		return objVos;
+	}
 	
 	public static CarQuoteReq getReqInfo(){
 		CarQuoteReq req = new CarQuoteReq();
@@ -246,8 +357,8 @@ public class ParamReplace {
 		req.setIsRenewal(0);//是否续保
 		req.setStartDateBI("2016-11-09 00:00:00");//商业险起保日期
 		req.setEndDateBI("2017-10-08 23:59:59");//商业险终保日期
-		req.setStartDateCI("2016-10-09 00:00:00");//交强险起保日期
-		req.setEndDateCI("2017-10-08 23:59:59");//交强险终保日期
+		req.setStartDateCI("2016-10-14 00:00:00");//交强险起保日期  --重要，影响结算结果
+		req.setEndDateCI("2017-10-13 23:59:59");//交强险终保日期
 		req.setRunArea("389001");//行驶区域代码
 		//req.setFileList("")//附件列表
 		
@@ -259,20 +370,52 @@ public class ParamReplace {
 		//投保险种明细
 		List<CarQuoteInsItemVo> itemList = new ArrayList<CarQuoteInsItemVo>();
 		CarQuoteInsItemVo insItem = new CarQuoteInsItemVo();
-		itemList.add(insItem);
 		req.setCarQuoteInsItemList(itemList);
-		insItem.setKindCode("");//险别代码
-		insItem.setInsuredAmount("");//每标的保额/限额
-		insItem.setDeductibleFlag(0);//不计免赔特约险购买标志
+		itemList.add(insItem);
+		insItem.setKindCode("030101");//险别代码
+		insItem.setInsuredAmount("191000");//每标的保额/限额
+		insItem.setDeductibleFlag(1);//不计免赔特约险购买标志
+		
+		//全车盗抢险
+	/*	CarQuoteInsItemVo insItem1 = new CarQuoteInsItemVo();
+		itemList.add(insItem1);
+		insItem1.setKindCode("030103");//险别代码
+		insItem1.setInsuredAmount("191000");//每标的保额/限额
+		insItem1.setDeductibleFlag(0);//不计免赔特约险购买标志
+*/		
+		/*CarQuoteInsItemVo insItem2 = new CarQuoteInsItemVo();
+		itemList.add(insItem2);
+		insItem2.setKindCode("030108");//险别代码
+		insItem2.setInsuredAmount("191000");//每标的保额/限额
+		insItem2.setDeductibleFlag(0);//不计免赔特约险购买标志
+*/		
+		/*CarQuoteInsItemVo insItem3 = new CarQuoteInsItemVo();
+		itemList.add(insItem3);
+		insItem3.setKindCode("030107");//险别代码
+		insItem3.setDeductibleFlag(0);//不计免赔特约险购买标志
+		
+		CarQuoteInsItemVo insItem4 = new CarQuoteInsItemVo();
+		itemList.add(insItem4);
+		insItem4.setKindCode("030115");//险别代码
+		insItem4.setDeductibleFlag(0);//不计免赔特约险购买标志
+		
+		
+		CarQuoteInsItemVo insItem5 = new CarQuoteInsItemVo();
+		itemList.add(insItem5);
+		insItem5.setKindCode("030109");//险别代码
+		insItem5.setInsuredAmount("20000");//每标的保额/限额
+		insItem5.setDeductibleFlag(0);//不计免赔特约险购买标志
+*/		
+		
 		
 		
 		//行驶证及相关行驶信息
 		CarLicenseInfoVo licenInfo = new CarLicenseInfoVo();
 		req.setCarLicenseInfo(licenInfo);
-		licenInfo.setLicenseNo("粤BX13G2");//号牌号码
-		licenInfo.setEngineNo("H357719");//发动机号
+		licenInfo.setLicenseNo("粤BX13G7");//号牌号码
+		licenInfo.setEngineNo("H357717");//发动机号
 		licenInfo.setEnrollDate("2016-10-08");//车辆初登日期
-		licenInfo.setVin("LVGBF53K0EG104355");//车架号
+		licenInfo.setVin("LVGBF53K0EG104357");//车架号
 		licenInfo.setChgOwnerFlag("");//过户车标志
 		licenInfo.setChgOwnerDate("");//过户日期
 		licenInfo.setOwnerNature("");//行驶证车主性质
