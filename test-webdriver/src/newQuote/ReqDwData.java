@@ -1,4 +1,4 @@
-package hyj.model;
+package newQuote;
 
 import java.io.Serializable;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
  * @date 2016年9月23日 上午10:02:23
  *
  */
-public class DwData implements Serializable {
+public class ReqDwData implements Serializable {
 
 	
 	private static final long serialVersionUID = 5222694668336563L;
@@ -22,7 +22,7 @@ public class DwData implements Serializable {
 	
 	private String dwName;
 	
-	private Integer rsCount; 
+	private Integer rsCount;
 	
 	private Integer pageSize;
 	

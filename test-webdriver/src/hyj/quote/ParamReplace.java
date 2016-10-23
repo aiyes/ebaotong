@@ -225,7 +225,6 @@ public class ParamReplace {
         //newString = replaceCrvg(newString,cvrgDwObjstr,cvrg119,req.getCarQuoteInsItemList());
         
         List<DwData> dwDatas = JSON.parseArray(newString, DwData.class);
-        System.out.println("newstr1__"+newString);
         for(DwData dw:dwDatas){
         	if(dw.getDwName().equals("prodDef.vhl.Cvrg_DW")){
         		dw.setDataObjVoList(replaceCrvg1(cvrgDwObjstr,cvrg119,req.getCarQuoteInsItemList()));
@@ -234,7 +233,6 @@ public class ParamReplace {
         
         newString = JSON.toJSONString(dwDatas);
         
-        System.out.println("newstr2__"+newString);
         return newString;
 	}
 	/**
@@ -344,7 +342,6 @@ public class ParamReplace {
 			}
 			objVos.add(objVo);
 		}
-		System.out.println("000"+JSON.toJSONString(objVos));
 		return objVos;
 	}
 	
@@ -356,9 +353,9 @@ public class ParamReplace {
 		req.setLicenseFlag(0);//牌照标志
 		req.setIsRenewal(0);//是否续保
 		req.setStartDateBI("2016-11-09 00:00:00");//商业险起保日期
-		req.setEndDateBI("2017-10-08 23:59:59");//商业险终保日期
-		req.setStartDateCI("2016-10-14 00:00:00");//交强险起保日期  --重要，影响结算结果
-		req.setEndDateCI("2017-10-13 23:59:59");//交强险终保日期
+		req.setEndDateBI("2017-01-08 23:59:59");//商业险终保日期
+		req.setStartDateCI("2016-11-14 00:00:00");//交强险起保日期  --重要，影响结算结果
+		req.setEndDateCI("2017-11-13 23:59:59");//交强险终保日期
 		req.setRunArea("389001");//行驶区域代码
 		//req.setFileList("")//附件列表
 		
@@ -377,18 +374,18 @@ public class ParamReplace {
 		insItem.setDeductibleFlag(1);//不计免赔特约险购买标志
 		
 		//全车盗抢险
-	/*	CarQuoteInsItemVo insItem1 = new CarQuoteInsItemVo();
+		CarQuoteInsItemVo insItem1 = new CarQuoteInsItemVo();
 		itemList.add(insItem1);
 		insItem1.setKindCode("030103");//险别代码
 		insItem1.setInsuredAmount("191000");//每标的保额/限额
 		insItem1.setDeductibleFlag(0);//不计免赔特约险购买标志
-*/		
-		/*CarQuoteInsItemVo insItem2 = new CarQuoteInsItemVo();
+		
+		CarQuoteInsItemVo insItem2 = new CarQuoteInsItemVo();
 		itemList.add(insItem2);
 		insItem2.setKindCode("030108");//险别代码
 		insItem2.setInsuredAmount("191000");//每标的保额/限额
 		insItem2.setDeductibleFlag(0);//不计免赔特约险购买标志
-*/		
+		
 		/*CarQuoteInsItemVo insItem3 = new CarQuoteInsItemVo();
 		itemList.add(insItem3);
 		insItem3.setKindCode("030107");//险别代码

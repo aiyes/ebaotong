@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  *
  */
 
-public class ParsePostSring {
+public class ParsePostSring { 
 	/**
 	 * @Description: TODO(获取替换参数的报文)
 	 * @param originalDwData原始报文

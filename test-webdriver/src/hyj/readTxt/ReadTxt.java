@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
+
 /**
  * @ClassName: ReadTxt
  * @Description: TODO()
@@ -21,6 +25,9 @@ import java.util.regex.Pattern;
  */
 
 public class ReadTxt {
+	private static Log log =LogFactory.getLog(ReadTxt.class);
+	static Logger logger = Logger.getLogger(ReadTxt.class);
+
 
 public static String readTxtFile(String filePath){ 
 	 String getString="";
@@ -49,8 +56,9 @@ public static String readTxtFile(String filePath){
 } 
   
 public static void main(String argv[]){ 
-	
-    String filePath = "E:\\my_txt\\postString.txt"; 
+	logger.info("ceshi记录222");
+	logger.debug("asdfa)))))");
+  /*  String filePath = "E:\\my_txt\\postString.txt"; 
     String pString = readTxtFile(filePath);
     List<Integer> indexs = new ArrayList<Integer>();
     int poit = 0,index=0;
@@ -74,7 +82,7 @@ public static void main(String argv[]){
     	}
     	System.out.println(pString.substring(startNum, endNum+1));
     }
-    
+    */
    // System.out.println(indexs.size());
 }
 
