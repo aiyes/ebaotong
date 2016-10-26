@@ -87,10 +87,10 @@ public class TestModelJson {
 		
 		//System.out.println(dwbString);
 	}
-	@Test
+	/*@Test
 	public void test3() {
 		HttpReq.getResultMsg(post1content);
-	}
+	}*/
 	@Test
 	public void test4() throws Exception {
 		List<DwData> dwDatas = JSON.parseArray(post1String, DwData.class);
