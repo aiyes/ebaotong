@@ -91,5 +91,15 @@
 			<attribute name="maven.scope" value="compile"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="/ebtins-smart-proxy"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="commons-lang"/>
+			<attribute name="maven.artifactId" value="commons-lang"/>
+			<attribute name="maven.version" value="2.6"/>
+			<attribute name="maven.scope" value="compile"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
