@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +47,11 @@ import com.ebtins.dto.open.CarQuoteReq;
 import com.ebtins.dto.open.CarQuoteRes;
 import com.ebtins.open.common.constant.CarInsuranceConstant;
 import com.ebtins.open.common.util.IDCardUtil;
+import com.ebtins.open.common.util.TimeUtil;
 
 import ebtins.smart.proxy.company.huaan.HuaanConfig;
 import ebtins.smart.proxy.company.huaan.util.HuaanUtil;
+import ebtins.smart.proxy.company.huaan.util.HuaanVerifyQuoteReqUtil;
 import ebtins.smart.proxy.conf.Constants;
 import newQuote.AttributeVo;
 import newQuote.DataObjVo;
@@ -221,7 +224,8 @@ public class HttpReq {
 	 */
     public static CarQuoteRes quoteReq(String post1String,CarQuoteReq req) throws Exception {
     	CarQuoteRes res = new CarQuoteRes();
-    	post1String = getNewDwData(req,res,post1String, HuaanConfig.getParamMap());
+    	Map<String,Object> params = HuaanConfig.getParamMap();
+    	post1String = getNewDwData(req,res,post1String,params);
     	if(res.getHeader().getResCode()!=null&&res.getHeader().getResCode().equals(Constants.FAIL)){
     		return res;
     	}
@@ -254,31 +258,48 @@ public class HttpReq {
         String referer=(String) postStrObj.get("referer");
         String post1_cust_data=(String) postStrObj.get("post1_cust_data");
         String post2_cust_data=(String) postStrObj.get("post2_cust_data");
-        //post:点击保费计算按钮
-         System.out.println("请求报文1--->"+post1String);
-         String post1Content=post(qModelUrl,UTF8, cookies,referer,post1_cust_data,post1String,"calcPremiumSino");
-         System.out.println("返回报文1--->"+post1Content);
-         String msg1 = HuaanUtil.getResultMsg(post1Content);
-         
-        //get:点击保费计算后第一次弹出框
-        //String get1_string =get((String) postStrObj.get("get1_url"),"UTF-8",cookies);
         
-        //post:第一次弹出框点击确认后post
-        String post2String = HuaanUtil.getNewPostByBackContent(post1Content,2);
+        String post2String = "",msg1="";
+        /**
+         * 如果只购买交强险，只执行第二、第三次post请求
+         */
+        if(params.get("Base.CProdNo").toString().equals("0360")){
+        	post2String = post1String;
+        }else{
+        	//post:点击保费计算按钮（第一次post请求）
+            System.out.println("请求报文1--->"+post1String);
+            String post1Content=post(qModelUrl,UTF8, cookies,referer,post1_cust_data,post1String,"calcPremiumSino");
+            System.out.println("返回报文1--->"+post1Content);
+            msg1 = HuaanUtil.getResultMsg(post1Content);
+            
+           //get:点击保费计算后第一次弹出框
+           //String get1_string =get((String) postStrObj.get("get1_url"),"UTF-8",cookies);
+           
+            post2String = HuaanUtil.getNewPostByBackContent(post1Content,2);
+        }
+        //post:第一次弹出框点击确认后（第二次post请求）   
         System.out.println("请求报文2--->"+post2String);
         String post2Content = post(qModelUrl,UTF8,cookies,referer,post2_cust_data,post2String,"calcPremiumSino");
         System.out.println("返回报文2--->"+post2Content);
         String msg2 = HuaanUtil.getResultMsg(post2Content);
         
-        //post：保费计算成功，返回数据
+        //post：保费计算成功，返回数据（第三次post请求）   
         String post3String = HuaanUtil.getNewPostByBackContent(post2Content,3);
         System.out.println("请求报文3--->"+post3String);
         String post3Content = post(qModelUrl,UTF8,cookies,referer,post2_cust_data,post3String,"sendToILog");
         System.out.println("返回报文3--->"+post3Content);
         //最后一次get请求
         //String get2_string =get((String) postStrObj.get("get2_url"),"UTF-8",cookies);
+        
+        //post：保存（第四次post请求）  
+        String post4String = HuaanUtil.getNewPostByBackContent(post3Content,4);
+        String save_cust_data=(String) postStrObj.get("save_cust_data");
+        System.out.println("请求报文4--->"+post4String);
+        String post4Content = post(qModelUrl,UTF8,cookies,referer,save_cust_data,post4String,"savePlyApp");
+        System.out.println("返回报文4--->"+post4Content);
+         
         System.out.println("-----------返回报文----------");	
-        return  resData(req,post3Content,msg1+";"+msg2);
+        return  getResData(req,post3Content,msg1+";"+msg2);
        
     }
     /**
@@ -289,7 +310,7 @@ public class HttpReq {
      * @author yejie.huang
      * @date 2016年10月11日 下午2:40:46
      */
-    public static  CarQuoteRes resData(CarQuoteReq carQuoteReq,String resContent,String msg){
+    public static  CarQuoteRes getResData(CarQuoteReq carQuoteReq,String resContent,String msg){
 		CarQuoteRes qRes = getResQuote(resContent,msg);
 		qRes.setMerchantOrderId(carQuoteReq.getMerchantOrderId());
 		if (qRes.getCarQuoteInfo() == null) {
@@ -308,7 +329,7 @@ public class HttpReq {
 		return qRes;
 	}
     /**
-     * @Description: TODO()
+     * @Description: TODO(封装CarQuoteRes)
      * @param content报文
      * @return 返回CarQuoteRes对象
      * @author yejie.huang
@@ -360,31 +381,38 @@ public class HttpReq {
 				syPremimum = Double.parseDouble(nameValue.get("SY_Base.NPrm"));//商业险保费
 			}
 
-			double jqPremimum =0.0,jqInsured=0.0;
+			double jqPremimum =0.0,jqInsured=0.0,jqTax=0.0;
 			if(nameValue.get("Base.CProdNo").indexOf("0360")>-1){
 				jqInsured = Double.parseDouble(nameValue.get("JQ_Base.NAmt"));//交强险保额
 				jqPremimum = Double.parseDouble(nameValue.get("JQ_Base.NPrm"));//交强险保费
+				jqTax = Double.parseDouble(nameValue.get("VsTax.NAggTaxAmt"));//税金合计
 			}
-			info.setSumCiPremium(jqPremimum);//交强险应付保费
+			info.setThisPayTax(String.valueOf(jqTax));//车船税当年应缴
+			info.setSumPayablePrem(String.valueOf(syPremimum+jqPremimum));//应交保费，不含车船税
+			info.setSumPayAmount(syPremimum+jqPremimum+jqTax);//应付金额，应交保费 + 车船税总额
+			info.setSumCiPremium(jqPremimum+jqTax);//交强险应付保费(含税)
 			info.setSumBiPremium(syPremimum);//商业险应付保费
 			info.setSumInsured(String.valueOf(syInsured+jqInsured));//总保额 = 商业+交强
-			info.setSumStdPrem(String.valueOf(syPremimum+jqPremimum));//总保费 = 商业+交强
 			info.setActualValue(nameValue.get("Vhl.NActualValue"));// 车辆实际价值
-
-			info.setCarQuoteInsItemList(getInsItemList(content,nameValue));//险种报价明细
-		
+			
+			List<CarQuoteInsItemVo> insItemList = getInsItemList(content);
+			//判断交强险是否有
+			if(nameValue.get("Base.CProdNo").indexOf("0360")>-1){
+				insItemList.add(getJqItem(nameValue));
+			}
+			info.setCarQuoteInsItemList(insItemList);//险种报价明细
 		}
 		return res;
 	}
   
     /**
-     * @Description: TODO(分析返回报文封装成险种明细列表List<CarQuoteInsItemVo> insItems)
+     * @Description: TODO(封装商业险明细列表List<CarQuoteInsItemVo> insItems)
      * @param resContent 返回报文
      * @return 险种明细列表
      * @author yejie.huang
      * @date 2016年10月13日 下午3:01:24
      */
-    public static List<CarQuoteInsItemVo> getInsItemList(String resContent,Map<String,String> nameValue){
+    public static List<CarQuoteInsItemVo> getInsItemList(String resContent){
     	
     	/**
     	 * json字符转换为ResContent对象，获取属性“WEB_DATA”值
@@ -393,7 +421,7 @@ public class HttpReq {
 		List<ReqDwData> dwDatas = content.getWEB_DATA();
 		
 		/**
-		 * 获取返回报文dwName为prodDef.vhl.Cvrg_DW对象
+		 * 获取返回报文属性dwName的值为prodDef.vhl.Cvrg_DW对象
 		 */
 		List<DataObjVo> dataObjVoList=null;
 		for(ReqDwData dwData :dwDatas){
@@ -419,7 +447,7 @@ public class HttpReq {
 				insItemDeduflag0.setKindCode(kindCodeDeduflag0);
 				insItemDeduflag0.setKindName(CarInsuranceConstant.getCarInsuranceTypeMap().get(kindCodeDeduflag0));//险别名称
 				insItems.add(insItemDeduflag0);
-				
+				//如果购买了不计免赔
 				if(insItemDeduflag1.getDeductibleFlag()==1){
 					String kindCodeDeduflag1 = "D"+kindCodeDeduflag0;
 					insItemDeduflag1.setKindCode(kindCodeDeduflag1);
@@ -428,16 +456,10 @@ public class HttpReq {
 				}
 			}
 		}
-		/**
-		 * 交强险是否有
-		 */
-		if(nameValue.get("Base.CProdNo").indexOf("0360")>-1){
-			insItems.add(getJqItem(nameValue));
-		}
     	return insItems;
     }
     /**
-     * @Description: TODO(封装商业险明细--每项计免赔和不计免赔)
+     * @Description: TODO(封装商业险明细--计免赔和不计免赔)
      * @param objVo 报文
      * @return 商业险明细
      * @author yejie.huang
@@ -454,6 +476,7 @@ public class HttpReq {
 		insItemDeduflag0.setCommission("");//合作方推广费
 		
 		//不计免赔
+		insItemDeduflag1.setInsuredAmount("");
 		insItemDeduflag1.setQuoteNo("");// 可空
 		insItemDeduflag1.setCategory(1);//商业险
 		insItemDeduflag1.setBenchmarkPremium("");// 标准保费
@@ -466,13 +489,12 @@ public class HttpReq {
 				insItemDeduflag1.setKindCode(attrVo.getNewValue());
 			}else if(attrVo.getName().equals("Cvrg.CDductMrk")){//不计免赔标志
 				insItemDeduflag1.setDeductibleFlag(attrVo.getNewValue().equals("")?0:Integer.parseInt(attrVo.getNewValue()));
-			}else if(attrVo.getName().equals("Cvrg.NNormalFreepay ")){//不计免赔保费
+			}else if(attrVo.getName().equals("Cvrg.NNormalFreepay")){//不计免赔保费
 				insItemDeduflag1.setPremium(attrVo.getNewValue());
-			}else if(attrVo.getName().equals("Cvrg.NNormalPrm ")){//折后保费(计免赔)
+			}else if(attrVo.getName().equals("Cvrg.NNormalPrm")){//折后保费(计免赔)
 				insItemDeduflag0.setPremium(attrVo.getNewValue());
 			}else if(attrVo.getName().equals("Cvrg.NAmt")){//保额
 				insItemDeduflag0.setInsuredAmount(attrVo.getNewValue());
-				insItemDeduflag1.setInsuredAmount(attrVo.getNewValue());
 			}else if(attrVo.getName().equals("Cvrg.CYl4")){//商业第三险，保额
 			   String value =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getrCvrgCyMap().get(attrVo.getNewValue()));
 			   if(!"".equals(value)){
@@ -564,12 +586,10 @@ public class HttpReq {
 		postParams.put("Vhl.CModelCde","GTM7251GB");//
 		postParams.put("Vhl.CModelNme","丰田GTM7251GB轿车");//()
 		postParams.put("Vhl.CCarAtr","");//经营属性
-		postParams.put("Vhl.CRegVhlTyp","K11");//车辆类型描述
 		postParams.put("Vhl.CIsTipperFlag","0");//是否自卸车
 		postParams.put("Vhl.CIndustryModelCode","BGQGKNUD0006");//行业车型编码
 		postParams.put("Vhl.CFleetMrk","0");//车队标志
 		postParams.put("Vhl.CLoanVehicleFlag","0");//车贷投保多年
-		postParams.put("Vhl.CYl4","303011001");//玻璃类型
 		postParams.put("Vhl.CAmtType","943001");//保额确定类型
 		postParams.put("Vhl.CInqType","645001");//折旧率
 		postParams.put("Vhl.NDespRate","386001");//(
@@ -604,7 +624,12 @@ public class HttpReq {
 		//sex
 		//age
 		//birthday
-		postParams.put("Applicant.CCertfCls",HuaanConfig.getIdCardMap().get(req.getCarInsurerInfo().getIdType()));//证件类型 --idType
+		String insureIdType =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getIdCardMap().get(req.getCarInsurerInfo().getIdType()));
+		if("".equals(insureIdType)){
+			res.getHeader().setResCode(Constants.FAIL);
+			res.getHeader().setResMsg(req.getCarInsurerInfo().getIdType()+":投保人证件类型不能识别!");
+		}
+		postParams.put("Applicant.CCertfCls",insureIdType);//证件类型 --idType
 		postParams.put("Applicant.CCertfCde",req.getCarInsurerInfo().getIdNo());//证件号码--idNo
 		postParams.put("Applicant.CTel",req.getCarInsurerInfo().getTelePhone());//电话 telePhone/mobilePhone
 		//email
@@ -614,11 +639,16 @@ public class HttpReq {
 		//--------------CarOrderRelationInfoVo--被保人信息------------
 		//orderId
 		//relationType 关系人类型 1-投保人;2-被保人;3-收件人
+		String assuredIdType =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getIdCardMap().get(req.getCarAssuredInfo().getIdType()));
+		if("".equals(assuredIdType)){
+			res.getHeader().setResCode(Constants.FAIL);
+			res.getHeader().setResMsg(req.getCarAssuredInfo().getIdType()+":被保人证件类型不能识别!");
+		}
 		postParams.put("Insured.CInsuredNme",req.getCarAssuredInfo().getName());//姓名
-		postParams.put("Insured.CSex",HuaanUtil.getGenderByIdCard(req.getCarAssuredInfo().getIdNo()));//性别
-		postParams.put("Insured.NAge","27");//年龄
+		postParams.put("Insured.CSex",HuaanUtil.getGenderByIdCard(req.getCarAssuredInfo().getIdNo(),req.getCarAssuredInfo().getIdType()));//性别
+		postParams.put("Insured.NAge",req.getCarAssuredInfo().getAge());//年龄
 		//birthday
-		postParams.put("Insured.CCertfCls",HuaanConfig.getIdCardMap().get(req.getCarAssuredInfo().getIdType()));//证件类型
+		postParams.put("Insured.CCertfCls",assuredIdType);//证件类型
 		postParams.put("Insured.CCertfCde",req.getCarAssuredInfo().getIdNo());//证件号码
 		postParams.put("Insured.CTel",req.getCarAssuredInfo().getTelePhone());//电话---telePhone/mobilePhone
 		//email
@@ -631,9 +661,6 @@ public class HttpReq {
 		
 		postParams.put("Timmer.BTotalDays","365");//共
 		postParams.put("Timmer.BNRatioCoef","1.0");//短期费率系数
-		postParams.put("Timmer.TAppTm","2016-11-08");//投保日期
-		postParams.put("Timmer.TOprTm","2016-11-08");//录单日期
-		postParams.put("Timmer.TIssueTm","2016-10-08");//签单日期
 		postParams.put("Pay.NTms","1");//
 		postParams.put("JQ_Pay.NPayablePrm","0");//
 		postParams.put("SY_Pay.NPayablePrm","0");//
@@ -658,18 +685,24 @@ public class HttpReq {
 		postParams.put("Vhl.NDisplacement",req.getCarModelInfo().getExhaustScale());//排量----exhaustScale 排气量
 		//fullWeight 整备质量
 		postParams.put("Vhl.CProdPlace",req.getCarLicenseInfo().getCountryNature());//车辆产地--carStyle国别性质：01-国产、02-进口、03-合资
+		//postParams.put("Vhl.CYl4",HuaanUtil.getCYl4(req.getCarLicenseInfo().getVin()));//玻璃类型  根据 车辆产地和车架号 
+		postParams.put("Vhl.CYl4","303011001");
 		//transmissionType 变速箱类型: 如自动档、手动档
 		//configurationLevel 配置版本级别: 如经济型、豪华型
 		//carTypeCode  行驶证车辆类型
 		String carType =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getCarVehicleTypeMap().get(req.getCarModelInfo().getCarVehicleType()));
 		if("".equals(carType)){
 			res.getHeader().setResCode(Constants.FAIL);
-			res.getHeader().setResMsg(req.getCarModelInfo().getCarVehicleType()+" 车辆种类不能识别!");
+			res.getHeader().setResMsg(req.getCarModelInfo().getCarVehicleType()+":车辆种类不能识别!");
 		}
 		postParams.put("Vhl.CVhlSubTyp",carType);//车辆种类----carVehicleType 车辆种类:1为客车，2为货车，3为特种车
-		//postParams.put("Vhl.CVhlSubTyp","308003");
-		postParams.put("Vhl.CVhlTyp","344001");//车辆类型---carVehicleTypeCode 车辆种类类型
-		postParams.put("Vhl.CUsageCde","309006");
+		String carTypeCode =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getCarTypeCode().get(req.getCarModelInfo().getCarTypeCode()));
+		if("".equals(carTypeCode)){
+			res.getHeader().setResCode(Constants.FAIL);
+			res.getHeader().setResMsg(req.getCarModelInfo().getCarTypeCode()+":车辆类型代码不能识别!");
+		}
+		//postParams.put("Vhl.CVhlTyp",carTypeCode);//车辆类型---carVehicleTypeCode 车辆类型  6座以下 6-10座，6座以上
+		postParams.put("Vhl.CVhlTyp",344001);
 		//carVehicleTypeSubcode 车辆种类子类型（特种车独有）
 		//countryNature 国别性质：01-国产、02-进口、03-合资
 		//modelId 内部车型编号，数据库主键ID
@@ -692,6 +725,12 @@ public class HttpReq {
 		postParams.put("Timmer.BTInsrncEndTm",req.getEndDateBI());//
 		postParams.put("Timmer.JTInsrncBgnTm",req.getStartDateCI());//保险起止期--交强险起保日期
 		postParams.put("Timmer.JTInsrncEndTm",req.getEndDateCI());//
+		
+		//关键日期参数  不可缺
+		String currentTime = TimeUtil.toString(new Date());
+		postParams.put("Timmer.TIssueTm",currentTime);//签单日期
+		postParams.put("Timmer.TAppTm",currentTime);//投保日期  
+		postParams.put("Timmer.TOprTm",currentTime);//录单日期
 		//runArea 行驶区域（城市），如深圳
 		postParams.put("SY_PrmCoef.CRunArea",req.getRunAreaCode());//行驶区域--行驶区域代码
 		//insureCity 投保区域（城市）
@@ -702,13 +741,18 @@ public class HttpReq {
 		String idType =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getIdCardMap().get(req.getCarOwnerInfo().getOwnerIdType()));
 		if("".equals(idType)){
 			res.getHeader().setResCode(Constants.FAIL);
-			res.getHeader().setResMsg(req.getCarOwnerInfo().getOwnerIdType()+" 证件类型不能识别!");
+			res.getHeader().setResMsg(req.getCarOwnerInfo().getOwnerIdType()+":车主证件类型不能识别!");
 		}
 		postParams.put("Vhlowner.CCertfCls",idType);//证件类型  01-身份证， 驾驶证-02, 军人证-03，护照-04，临时身份证-05，港澳通行证-06，台湾通行证-07 21-组织机构代码 22-税务登记证  23-营业执照（三证合一）  24-其他证件
 		postParams.put("Vhlowner.CCertfCde",req.getCarOwnerInfo().getOwnerIdentifyNumber());//证件号码
 		postParams.put("Vhlowner.CClntAddress",req.getCarOwnerInfo().getOwnerAddr());//地址
-		postParams.put("Vhlowner.CDrvSex",HuaanUtil.getGenderByIdCard(req.getCarOwnerInfo().getOwnerIdentifyNumber()));//车主性别
-		postParams.put("Vhlowner.NDrvownerAge","27");//车主年龄
+		postParams.put("Vhlowner.CDrvSex",HuaanUtil.getGenderByIdCard(req.getCarOwnerInfo().getOwnerIdentifyNumber(),req.getCarOwnerInfo().getOwnerIdType()));//车主性别
+		int age = HuaanUtil.getAgeByIdCard(req.getCarOwnerInfo().getOwnerIdType(),req.getCarOwnerInfo().getOwnerIdentifyNumber(),req.getCarOwnerInfo().getOwnerAge());
+		if(0==age){
+			res.getHeader().setResCode(Constants.FAIL);
+			res.getHeader().setResMsg("车主证件类型非身份证需请输入年龄!");
+		}
+		postParams.put("Vhlowner.NDrvownerAge",age);//车主年龄
 		//ownerBirthday 车主出生日期，日期格式为yyyy-mm-dd
 		
 		//-------行驶证及相关行驶信息 CarLicenseInfoVo------
@@ -720,12 +764,17 @@ public class HttpReq {
 		postParams.put("Vhl.CDevice1Mrk",req.getCarLicenseInfo().getChgOwnerFlag());//?是否过户投保 --- chgOwnerFlag过户车标志,0-否；1-是，默认为0
 		//chgOwnerDate 过户日期，默认为""
 		//ownerNature 行驶证车主性质:01-个人;02-单位，默认为01
-		//postParams.put("Vhl.CUsageCde","309003");//使用性质--投保查询====>平台返回错误:示范条款保单承保时车辆使用性质不允许上传---useNature 车辆使用性质,1运营，2非运营，默认为2
+		String userNature =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getUseNatureMap().get(String.valueOf(req.getCarLicenseInfo().getUseNature())));
+		if("".equals(userNature)){
+			res.getHeader().setResCode(Constants.FAIL);
+			res.getHeader().setResMsg(req.getCarLicenseInfo().getUseNature()+":车辆使用性质不能识别!");
+		}
+		postParams.put("Vhl.CUsageCde",userNature);//使用性质--投保查询====>平台返回错误:示范条款保单承保时车辆使用性质不允许上传---useNature 车辆使用性质,1运营，2非运营，默认为2
 		//车辆产地--国别性质：01-国产、02-进口、03-合资(车型信息有此属性)
 		String customerType =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getCustomerTypeMap().get(req.getCarLicenseInfo().getCustomerType()));
 		if("".equals(customerType)){
 			res.getHeader().setResCode(Constants.FAIL);
-			res.getHeader().setResMsg(req.getCarLicenseInfo().getCustomerType()+" 车辆所有人性质不能识别!");
+			res.getHeader().setResMsg(req.getCarLicenseInfo().getCustomerType()+":车辆所有人性质不能识别!");
 		}
 		postParams.put("Vhl.CUseAtr3",customerType);//所属性质---customerType 所有人性质:： 01-个人，02-机关，03-企业，默认为01
 		postParams.put("Vhl.CPlateTyp",req.getCarLicenseInfo().getLicenseType());//号牌种类 --号牌种类：01为大型车，02为小型车，16为教练汽车，22为临时行驶车，默认为02
@@ -763,7 +812,7 @@ public class HttpReq {
 		postParams.put("VsTax.CTaxdptVhltyp",HuaanUtil.getVhltypeBySeat(seat,scale));//车船税车辆分类
 		/**
 		 * 判断是否购买交强险，0380_0360：商业险和交强险，0380：交强险
-		 */
+		 *//*
 		for(CarQuoteInsItemVo insItem:req.getCarQuoteInsItemList()){
 			if(insItem.getCategory()==0){
 				postParams.put("Base.CProdNo","0380_0360");//
@@ -771,7 +820,24 @@ public class HttpReq {
 			}else{
 				postParams.put("Base.CProdNo","0380");//
 			}
-		}
+		}*/
+		postParams.put("Base.CProdNo",HuaanUtil.getProNo(req.getCarQuoteInsItemList()));//交强、商业险标识
+		
+		//------------------交强信息-------------------------------------
+		postParams.put("Vhl.CPlateNo","粤BX13G1");
+		postParams.put("Vhl.CFrmNo","LVGBF53K0EG104351");
+		/*postParams.put("VsTax.CAbateMrk","922001");//减免税标志
+		postParams.put("VsTax.CPaytaxTyp","0");//
+		postParams.put("VsTax.CVhlCategory","K11");//车船税车辆类型
+		postParams.put("VsTax.NOverdueAmt","0.0");//滞纳金(元)
+		postParams.put("VsTax.NLastYear","0.0");//往年补缴金额
+		postParams.put("VsTax.CEnegyKind","0");//能源种类
+		postParams.put("VsTax.NAggTaxAmt","0");//税金合计
+		postParams.put("CvrgJQ.CCvrgNo","0357");//交强险险别
+*/		postParams.put("VsTax.CTaxpayerId",req.getCarOwnerInfo().getOwnerIdentifyNumber());
+		postParams.put("VsTax.NCurbWt",req.getCarModelInfo().getFullWeight());//整备质量
+		//-------------------------------------------------------
+		
         String newString = HuaanUtil.replacedParam(originalDwData, postParams).replace("undefined", "");
         
         String cvrgDwObjstr = HuaanConfig.getDwData().get("cvrgDwObj").toString();
@@ -793,7 +859,7 @@ public class HttpReq {
 	 * @Description: TODO(替换请求报文险种明细)
 	 * @param cvrgDwObjstr 单项险种明细报文模板
 	 * @param cvrg119 不计免赔报文模板
-	 * @param insItems 请求数据-险种明细
+	 * @param insItems 请求险种明细
 	 * @return 按报文格式组装的险种明细
 	 * @author yejie.huang
 	 * @date 2016年10月25日 上午11:26:13
@@ -802,9 +868,11 @@ public class HttpReq {
 		DataObjVo objVo119 = JSON.parseObject(cvrg119, DataObjVo.class);
 		List<DataObjVo> objVos = new ArrayList<DataObjVo>();
 		int indexNo=0;
-		boolean flag=true,jqFlag = true;;
+		boolean flag=true;
 		for(CarQuoteInsItemVo insItem : insItems){
-			
+			//险种验证
+			HuaanVerifyQuoteReqUtil.verifyItem(insItem,res);
+			//10交强险跳过
 			if(insItem.getKindCode().equals("10"))
 				continue;
 			/**
@@ -839,10 +907,6 @@ public class HttpReq {
 				attvo.setNewValue(String.valueOf(indexNo));
 			}else if(attvo.getName().equals("Cvrg.CCvrgNo")){//险种代码
 				String value =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getKindCodeMap().get(insItem.getKindCode()));
-				if("".equals(value)){
-					res.getHeader().setResCode(Constants.FAIL);
-					res.getHeader().setResMsg(insItem.getKindCode()+" 无效险别代码!");
-				}
 				attvo.setNewValue(value);
 			}else if(attvo.getName().equals("Cvrg.NAmt")){//险别保额/限额
 				attvo.setNewValue(insItem.getInsuredAmount());

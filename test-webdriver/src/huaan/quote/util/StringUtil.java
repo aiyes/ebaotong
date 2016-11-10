@@ -54,6 +54,20 @@ public class StringUtil {
 		 return resultString;
 	}
 	
+	public static String regStrings(String str,String reg,int groupNum){
+		  str = str.replaceAll("<input[^<]*hidden[^>]*>", "");
+		  String resultString="";
+		  Matcher m = createMatcher(str,reg);
+		  int count =0;
+		  while(m.find()){
+			  //resultString = m.group(groupNum);
+			  resultString =  m.group(1)+ m.group(6);
+			  System.out.println(resultString.replaceAll("\\s", ""));
+			  count+=1;
+		  }
+		  System.out.println("共："+count);
+		 return resultString;
+	}
 
 
 

@@ -29,6 +29,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -103,6 +104,7 @@ public class TestSSL {
 		    //获取结果实体  
 		    HttpEntity entity = response.getEntity();  
 		    System.out.println("返回："+response.getStatusLine());
+		    System.out.println(response.getHeaders("Cookie"));
 		    if (entity != null) {  
 		        //按指定编码转换结果实体为String类型  
 		        body = EntityUtils.toString(entity, encoding);
