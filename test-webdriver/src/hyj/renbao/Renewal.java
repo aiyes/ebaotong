@@ -26,6 +26,8 @@ import com.ebtins.dto.open.CarQuoteInfoVo;
 import com.ebtins.dto.open.CarQuoteInsItemVo;
 import com.ebtins.dto.open.CarRenewalReq;
 import com.ebtins.dto.open.CarRenewalRes;
+import com.ebtins.open.common.constant.CommonConstants;
+import com.ebtins.open.common.util.ValidatorUtil;
 
 import ebtins.smart.proxy.company.renbao.dto.RenbaoRenewalContent;
 import ebtins.smart.proxy.company.renbao.dto.RenbaoRenewalData;
@@ -43,19 +45,19 @@ import hyj.login.RenBaoLoginA;
 
 public class Renewal {
   public static CarRenewalRes getRenewal(CarRenewalReq req) throws Exception{
-	  RenBaoLoginA rl = new RenBaoLoginA();
-	  String cookie = rl.login();
+	  String cookie = RenBaoLoginA.login();
 	  String queryRenewalUrl = "http://10.134.130.208:8000/prpall/business/selectRenewal.do?pageSize=10&pageNo=1";
 	  String referRenewalUrl = "http://10.134.130.208:8000/prpall/business/prepareRenewal.do?bizType=PROPOSAL&editType=RENEWAL";
 	  Map<String, String> params=new HashMap<String, String>();
-	  params.put("prpCrenewalVo.engineNo","");
-	  params.put("prpCrenewalVo.frameNo","");
-	  params.put("prpCrenewalVo.licenseNo",req.getLicenseNo());
-	  params.put("prpCrenewalVo.licenseType","02");
-	  params.put("prpCrenewalVo.vinNo", "");
-	  params.put("prpCrenewalVo.policyNo", "");
-	  params.put("riskCode", "DAA");
+	  params.put("prpCrenewalVo.engineNo","");//发动机号
+	  params.put("prpCrenewalVo.frameNo","");//车架号
+	  params.put("prpCrenewalVo.licenseNo",req.getLicenseNo());//号牌号码
+	  params.put("prpCrenewalVo.licenseType","02");//号牌类型 02-小型汽车
+	  params.put("prpCrenewalVo.vinNo", "");//Vin好号
+	  params.put("prpCrenewalVo.policyNo", "");//上年保单号
+	  params.put("riskCode", "DAA");//DAA--机动车商业险
 	  String body =RenBaoLoginA.post(queryRenewalUrl, params,"GBK",cookie,referRenewalUrl);
+	  System.out.println("1119body-->"+body);
 	  System.out.println("bbb__>"+body);
 	  RenbaoRenewalContent renewalContent = JSON.parseObject(body, RenbaoRenewalContent.class);
 	  String BIpolicyNo = "",CIpolicyNo =	"";
@@ -74,29 +76,28 @@ public class Renewal {
 	  res.setLastCarQuoteInfo(carQuoteInfo);
 	  reqRenewal(res,cookie,CIpolicyNo,0);
 	  reqRenewal(res,cookie,BIpolicyNo,1);
-	  return res;
+	  return countSum(res);
   }
   public static CarRenewalRes reqRenewal(CarRenewalRes res,String cookie,String policyNo,int category) throws Exception{
 	  String UTF8 = "utf-8";
 	  Map<String, String> outCookies =new HashMap<String, String>();
 	  String renewalUrl = "http://10.134.130.208:8000/prpall/business/browsePolicyNo.do?bizNo="+policyNo;
 	  String renewalBody =RenBaoLoginA.get(renewalUrl,UTF8,cookie,null,outCookies);
+	  getBIRenewal(res,renewalBody,category);
 	  
 	  //商业险
 	  String action = category==1?"showCitemKind.do":"showCitemKindCI.do";
 	  String itemKindUrl = "http://10.134.130.208:8000/prpall/business/"+action+"?editType=SHOW_POLICY&bizType=POLICY&bizNo="+policyNo+"&riskCode=DAA&minusFlag=&contractNo=%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&comCode=44030716&originQuery=&proposalNo=TDAA201544030000056456&rnd614=Mon%20Nov%207%2013:44:34%20UTC+0800%202016";
 	  String itemKinddbody =RenBaoLoginA.get(itemKindUrl,UTF8,cookie,renewalUrl,outCookies);
+	  getCarQuoteInfo(res.getLastCarQuoteInfo(),itemKinddbody,category);
 	  System.out.println("itemKinddbody-->"+itemKinddbody);
-	  
+	  /**
+	   * category==1商业险，category==0交强险
+	   */
 	  if(category==1){
-		  getCarQuoteInfoBI(res.getLastCarQuoteInfo(),itemKinddbody);
-		  getBIRenewal(res,renewalBody);
 		  res.getLastCarQuoteInfo().getCarQuoteInsItemList().addAll(getkindItemsBI(itemKinddbody));
 	  }else if(category==0){
-		  getCarQuoteInfoCI(res.getLastCarQuoteInfo(),itemKinddbody);
-		  getCIRenewal(res,renewalBody);
 		  res.getLastCarQuoteInfo().getCarQuoteInsItemList().add(getkindItemCI(itemKinddbody));
-		  
 	  }
 	  
 	  if(res.getCarLicenseInfo()==null){
@@ -114,32 +115,30 @@ public class Renewal {
 	  return res;
   }
   
-  public static CarQuoteInfoVo getCarQuoteInfoBI(CarQuoteInfoVo carQuoteInfo,String body) throws Exception{
+  public static CarQuoteInfoVo getCarQuoteInfo(CarQuoteInfoVo carQuoteInfo,String body,int category) throws Exception{
 	  Map<String,String> relateMap = new HashMap<String,String>();
-	  relateMap.put("quoteNo", "");//报价单号
-	  relateMap.put("orderId", "");//车险订单Id
-	  relateMap.put("insurerId", "");//保险公司id
-	  relateMap.put("insurerName", "");//保险公司名称
-	  relateMap.put("companyType", "");//保险公司类型
-	  relateMap.put("quoteStatus", "");//报价状态
-	  relateMap.put("sumInsured", "");//总保额
-	  relateMap.put("sumStdPrem", "sumBenchPremium");//标准保费
-	  relateMap.put("sumPayablePrem", "");//应交保费，不含车船税
-	  relateMap.put("sumPayAmount", "");//应付金额，应交保费 + 车船税总额
-	  relateMap.put("discount", "prpCmain.discount");//折扣
-	  relateMap.put("sumBiPremium", "prpCmain.sumPremium");//商业险应付保费
-	  relateMap.put("actualValue", "");//车辆实际价值
-	  relateMap.put("remark", "");//备注说明
-	  setValueByClazz(carQuoteInfo,body,relateMap);
-	  return carQuoteInfo;
-  }
-  public static CarQuoteInfoVo getCarQuoteInfoCI(CarQuoteInfoVo carQuoteInfo,String body) throws Exception{
-	  Map<String,String> relateMap = new HashMap<String,String>();
-	  relateMap.put("sumCiPremium", "prpCitemKindCI.premium");//交强险应付保费  
-	  relateMap.put("thisPayTax", "prpCcarShipTax.thisPayTax");//车船税当年应缴
-	  relateMap.put("prePayTax", "prpCcarShipTax.prePayTax");//车船税往年补缴
-	  relateMap.put("delayPayTax", "prpCcarShipTax.delayPayTax");//车船税滞纳金
-	  relateMap.put("sumPayTax", "prpCcarShipTax.sumPayTax");//车船税总缴付税额
+	  if(category==1){
+		  relateMap.put("quoteNo", "");//报价单号
+		  relateMap.put("orderId", "");//车险订单Id
+		  relateMap.put("insurerId", "");//保险公司id
+		  relateMap.put("insurerName", "_人保");//保险公司名称
+		  relateMap.put("companyType", "_"+CommonConstants.COM_TYPE_RENBAO);//保险公司类型
+		  relateMap.put("quoteStatus", "");//报价状态
+		  relateMap.put("sumInsured", "");//总保额----人保没有直接返回，后面手工计算
+		  relateMap.put("sumStdPrem", "");//标准保费----人保没有直接返回
+		  relateMap.put("sumPayablePrem", "");//应交保费，不含车船税----人保没有直接返回
+		  relateMap.put("sumPayAmount", "");//应付金额，应交保费 + 车船税总额
+		  relateMap.put("discount", "prpCmain.discount");//折扣
+		  relateMap.put("sumBiPremium", "prpCmain.sumPremium");//商业险应付保费
+		  relateMap.put("actualValue", "");//车辆实际价值
+		  relateMap.put("remark", "");//备注说明
+	  }else if(category==0){
+		  relateMap.put("sumCiPremium", "prpCitemKindCI.premium");//交强险应付保费  
+		  relateMap.put("thisPayTax", "prpCcarShipTax.thisPayTax");//车船税当年应缴
+		  relateMap.put("prePayTax", "prpCcarShipTax.prePayTax");//车船税往年补缴
+		  relateMap.put("delayPayTax", "prpCcarShipTax.delayPayTax");//车船税滞纳金
+		  relateMap.put("sumPayTax", "prpCcarShipTax.sumPayTax");//车船税总缴付税额
+	  }
 	  setValueByClazz(carQuoteInfo,body,relateMap);
 	  return carQuoteInfo;
   }
@@ -149,7 +148,7 @@ public class Renewal {
 	  Map<String,String> relateMap = new HashMap<String,String>();
 	  relateMap.put("quoteDetailId", "");//车险报价险种明细编号
 	  relateMap.put("quoteNo", "");//报价单号
-	  relateMap.put("category", "");//险种类别: 0为交强险，1为商业险
+	  relateMap.put("category", "_0");//险种类别: 0为交强险，1为商业险
 	  relateMap.put("kindCode", "prpCitemKindCI.kindCode");//险种代码
 	  relateMap.put("kindName", "prpCitemKindCI.kindName");//险种名称
 	  relateMap.put("insuredAmount", "prpCitemKindCI.amount");//保额/限额
@@ -159,8 +158,8 @@ public class Renewal {
 	  relateMap.put("commission", "");//合作方推广费
 	  relateMap.put("premium", "prpCitemKindCI.premium");//应交保费
 	  CarQuoteInsItemVo res = new CarQuoteInsItemVo();
-	  return (CarQuoteInsItemVo) setValueByClazz(res,body,relateMap);
-	  
+	  setValueByClazz(res,body,relateMap);
+	  return res; 
   }
   
   //商业险列表
@@ -178,12 +177,19 @@ public class Renewal {
 	  }
 	  return items;
   }
- //商业险
+  /**
+   * @Description: TODO(封装商业险对象)
+   * @param body 返回报文html
+   * @param index 索引号--人保系统返回html险种信息在同一个table里，根据索引号获取每行险种
+   * @return 封装对象
+   * @author yejie.huang
+   * @date 2016年11月10日 上午11:21:47
+   */
   public static CarQuoteInsItemVo getkindItemBI(String body,String index) throws Exception{
 	  Map<String,String> relateMap = new HashMap<String,String>();
 	  relateMap.put("quoteDetailId", "");//车险报价险种明细编号
 	  relateMap.put("quoteNo", "");//报价单号
-	  relateMap.put("category", "");//险种类别: 0为交强险，1为商业险
+	  relateMap.put("category", "_1");//险种类别: 0为交强险，1为商业险
 	  relateMap.put("kindCode", "prpCitemKindsTemp["+index+"].kindCode");//险种代码
 	  relateMap.put("kindName", "prpCitemKindsTemp["+index+"].kindName");//险种名称
 	  relateMap.put("seatNum", "prpCitemKindsTemp["+index+"].quantity");// 司机（乘客）责任险的座位数
@@ -194,10 +200,16 @@ public class Renewal {
 	  relateMap.put("commission", "");//合作方推广费
 	  relateMap.put("premium", "prpCitemKindsTemp["+index+"].premium");//应交保费
 	  CarQuoteInsItemVo res = new CarQuoteInsItemVo();
-	  return (CarQuoteInsItemVo) setValueByClazz(res,body,relateMap);
-	  
+	  setValueByClazz(res,body,relateMap);
+	  return res; 
   }
-  //投保人、被保人、车主
+  /**
+   * @Description: TODO(组装投保人、被保人、车主对象)
+   * @param body 返回报文html
+   * @param res CarRenewalRes对象
+   * @author yejie.huang
+   * @date 2016年11月10日 上午11:33:37
+   */
   public static void getInsureAndOwner(String body,CarRenewalRes res) throws Exception{
 	  Document  doc =Jsoup.parse(body);
 	  Elements eles = doc.select("input[name~=prpCinsureds\\[\\d+\\]\\.insuredFlag]");
@@ -215,7 +227,14 @@ public class Renewal {
 	  }
 	  
   }
-  //投保人
+  /**
+   * @Description: TODO(封装投保人信息)
+   * @param body 返回报文html
+   * @param index 索引号--人保系统返回html（车主、投保人、被保人）信息在同一个table里，根据索引号获取对应行
+   * @return 封装对象
+   * @author yejie.huang
+   * @date 2016年11月10日 上午11:21:47
+   */
   public static CarInsurerInfoDTO getInsre(String body,String index) throws Exception{
 	  Map<String,String> relateMap = new HashMap<String,String>();
 	  relateMap.put("insName", "prpCinsureds["+index+"].insuredName");//投保人姓名
@@ -230,10 +249,17 @@ public class Renewal {
 	  relateMap.put("insLiveAddress", "prpCinsureds["+index+"].insuredAddress");//投保人居住地址
 	  relateMap.put("insPostCode", "prpCinsureds["+index+"].postCode");//投保人邮政编码
 	  CarInsurerInfoDTO res = new CarInsurerInfoDTO();
-	  return (CarInsurerInfoDTO) setValueByClazz(res,body,relateMap);
-	  
+	  setValueByClazz(res,body,relateMap);
+	  return res;
   }
-  //被保人
+  /**
+   * @Description: TODO(封装被保人信息)
+   * @param body 返回报文html
+   * @param index 索引号--人保系统返回html（车主、投保人、被保人）信息在同一个table里，根据索引号获取对应行
+   * @return 封装对象
+   * @author yejie.huang
+   * @date 2016年11月10日 上午11:21:47
+   */
   public static CarAssuredInfoDTO getAssure(String body,String index) throws Exception{
 	  Map<String,String> relateMap = new HashMap<String,String>();
 	  relateMap.put("assName", "prpCinsureds["+index+"].insuredName");//被保人姓名
@@ -248,10 +274,17 @@ public class Renewal {
 	  relateMap.put("assLiveAddress", "prpCinsureds["+index+"].insuredAddress");//被保人居住地址
 	  relateMap.put("assPostCode", "prpCinsureds["+index+"].postCode");//被保人邮政编码
 	  CarAssuredInfoDTO res = new CarAssuredInfoDTO();
-	  return (CarAssuredInfoDTO) setValueByClazz(res,body,relateMap);
-	  
+	  setValueByClazz(res,body,relateMap);
+	  return res;
   }
-  //车主
+  /**
+   * @Description: TODO(封装车主信息)
+   * @param body 返回报文html
+   * @param index 索引号--人保系统返回html（车主、投保人、被保人）信息在同一个table里，根据索引号获取对应行
+   * @return 封装对象
+   * @author yejie.huang
+   * @date 2016年11月10日 上午11:21:47
+   */
   public static CarOwnerInfoVo getCarOwner(String body,String index) throws Exception{
 		  Map<String,String> relateMap = new HashMap<String,String>();
 		  relateMap.put("carOwner", "prpCinsureds["+index+"].insuredName");//车主姓名
@@ -263,16 +296,17 @@ public class Renewal {
 		  relateMap.put("ownerAge", "prpCinsureds["+index+"].age");//车主年龄
 		  relateMap.put("ownerBirthday", "");//车主出生日期，日期格式为yyyy-mm-dd
 		  CarOwnerInfoVo res = new CarOwnerInfoVo();
-		  return (CarOwnerInfoVo) setValueByClazz(res,body,relateMap);
-		  
+		  setValueByClazz(res,body,relateMap);
+		  return res;
 	  }
-  //行驶证及相关行驶信息
+  /**
+   * @Description: TODO(封装行驶证车辆信息)
+   * @param body 返回报文html
+   * @return 封装对象
+   * @author yejie.huang
+   * @date 2016年11月10日 上午11:21:47
+   */
   public static CarLicenseInfoVo getCar(String body) throws Exception{
-	 /* String reg = "<td[^>]*>(((?!<td)[\\s\\S])*?)</td>\\s*<td((?!<td)[\\s\\S])*?(<(input|select)[\\s\\S]*?name=\"([^\"]+)\"[\\s\\S]*?)</td>";
-	  //String reg = "<td[\\s\\S]*?<input[^>]*>";
-	  System.out.println("------正则匹配--------");
-	  StringUtil.regStrings(body, reg, 0);*/
-	  
 	  Map<String,String> relateMap = new HashMap<String,String>();
 	  relateMap.put("licenseNo", "prpCitemCar.licenseNo");
 	  relateMap.put("engineNo", "prpCitemCar.engineNo");//发动机号
@@ -292,27 +326,34 @@ public class Renewal {
 	  relateMap.put("loanFlag", "");//是否贷款车: 1，是 0，否，默认为0
 	  relateMap.put("rentFlag", "");//是否租赁车: 1，是 0，否，默认为0
 	  CarLicenseInfoVo res = new CarLicenseInfoVo();
-	  return (CarLicenseInfoVo) setValueByClazz(res,body,relateMap);
-  }
-  //CarRenewalRes
-  public static void getBIRenewal(CarRenewalRes res,String body) throws Exception{
-	  Map<String,String> relateMap = new HashMap<String,String>();
-	  relateMap.put("startDateBI", "prpCmain.startDate");
-	  relateMap.put("endDateBI", "prpCmain.endDate");
 	  setValueByClazz(res,body,relateMap);
+	  return res; 
   }
-  //CarRenewalRes
-  public static void getCIRenewal(CarRenewalRes res,String body) throws Exception{
+  /**
+   * @Description: TODO(封装res对象)
+   * @param res CarRenewalRes
+   * @param body 返回报文html
+   * @param category 险种类型 1商业险，0交强险
+   * @return 封装对象
+   * @author yejie.huang
+   * @date 2016年11月10日 上午11:21:47
+   */
+  public static void getBIRenewal(CarRenewalRes res,String body,int category) throws Exception{
 	  Map<String,String> relateMap = new HashMap<String,String>();
-	  relateMap.put("startDateCI", "prpCmainCI.startDate");
-	  relateMap.put("endDateCI", "prpCmainCI.endDate");
+	  if(category==1){
+		  relateMap.put("startDateBI", "prpCmain.startDate");
+		  relateMap.put("endDateBI", "prpCmain.endDate");
+	  }else if(category==0){
+		  relateMap.put("startDateCI", "prpCmainCI.startDate");
+		  relateMap.put("endDateCI", "prpCmainCI.endDate");
+	  }
 	  setValueByClazz(res,body,relateMap);
   }
   /**
-   * @Description: TODO(封装对象)
+   * @Description: TODO(封装任意类型对象)
    * @param obj 需要封装的对象
-   * @param body 报文（html）
-   * @param relateMap Map类型参数,key为内部com.ebtins.dto.open.*的Model属性，Value为外部抓取报文（html）参数名
+   * @param body 返回报文（html）
+   * @param relateMap key为内部com.ebtins.dto.open.*的Model属性，Value为外部抓取报文（html--input[name=）参数名
    * @return 返回封装对象
    * @author yejie.huang
    * @date 2016年11月8日 下午3:28:36
@@ -320,17 +361,22 @@ public class Renewal {
   public static Object setValueByClazz(Object obj,String body,Map<String,String> relateMap) throws Exception{
 	  Document  doc =Jsoup.parse(body);
 	  /**
-	   * 获取html input标签的value值
+	   * 获取html input标签value值
 	   */
 	  for(String key:relateMap.keySet()){
+		  String paramName = relateMap.get(key);
 		  String inputValue = "";
-		  if(!"".equals(relateMap.get(key))){
-			  inputValue =doc.select("input[name="+relateMap.get(key)+"]").attr("value");
+		  if(!"".equals(paramName)){
 			  /**
-			   * 特殊情况处理，复选框取的是checked值
+			   * 特殊情况处理:1、如果是复选框，取input标签checked属性值；2、如果是下划线开头(自定义值)，直接取下划线后面值
+			   * 其他情况取input标签value属性值
 			   */
-			  if(relateMap.get(key).contains("specialCheckBox")&&doc.select("input[name="+relateMap.get(key)+"]").attr("checked").equals("checked")){
+			  if(paramName.contains("specialCheckBox")&&doc.select("input[name="+paramName+"]").attr("checked").equals("checked")){
 				  inputValue = "1";
+			  }else if(paramName.startsWith("_")){
+				  inputValue = paramName.substring(1);
+			  }else{
+				  inputValue =doc.select("input[name="+paramName+"]").attr("value");
 			  }
 		  }
 		  relateMap.put(key, inputValue);
@@ -340,16 +386,24 @@ public class Renewal {
 	  return obj;
 	  
   }
+  /**
+   * @Description: TODO(计算总保额、总标准保费、总应交保费，人保系统没有直接返回总和)
+   * @param res 续保返回对象
+   * @author yejie.huang
+   * @date 2016年11月10日 上午9:39:20
+   */
   public static  CarRenewalRes countSum(CarRenewalRes res){
-	  double sumInsured=0.0,sumPayAmount=0.0,sumStdPrem=0.0;
+	  double sumInsured=0.0,sumStdPrem=0.0;
 	  for(CarQuoteInsItemVo item : res.getLastCarQuoteInfo().getCarQuoteInsItemList()){
-		  sumInsured += Double.parseDouble(item.getInsuredAmount());
-		  sumPayAmount += Double.parseDouble(item.getPremium());
-		  sumStdPrem += Double.parseDouble(item.getBenchmarkPremium());
+		  if(ValidatorUtil.isNumeric(item.getInsuredAmount()))
+			  sumInsured += Double.parseDouble(item.getInsuredAmount());
+		  if(ValidatorUtil.isNumeric(item.getBenchmarkPremium()))
+			  sumStdPrem += Double.parseDouble(item.getBenchmarkPremium());
 	  }
 	  res.getLastCarQuoteInfo().setSumInsured(String.valueOf(sumInsured));
-	  res.getLastCarQuoteInfo().setPayAmount(String.valueOf(sumPayAmount));
 	  res.getLastCarQuoteInfo().setSumStdPrem(String.valueOf(sumStdPrem));
+	  double sumPayAmount = res.getLastCarQuoteInfo().getSumBiPremium()+res.getLastCarQuoteInfo().getSumCiPremium();
+	  res.getLastCarQuoteInfo().setSumPayAmount(sumPayAmount);
 	  return res;
   }
 }

@@ -3,18 +3,12 @@
  */
 package hyj.renbao;
 
-import static org.junit.Assert.*;
-
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,6 +29,19 @@ import ebtins.smart.proxy.company.renbao.util.RenbaoUtil;
  */
 
 public class Test1 {
+	
+	@Test
+	public void test11() {
+		//String reg ="<p[^>]*>([^<]*)</p>";
+		String reg = "(?<=<p  id='q'>).*(?=</p>)";
+		String str = "<P  id='q'>    123    sdjfsd    jlsdfd</p>";
+		Pattern p = Pattern.compile(reg);
+	    Matcher m = p.matcher(str);
+	    if(m.find()){
+	    	str = m.group(0);
+		  }
+		System.out.println(str);
+	}
 
 	@Test
 	public void test() throws ClassNotFoundException, InstantiationException, IllegalAccessException, Exception {
@@ -61,5 +68,9 @@ public class Test1 {
 		  }
 		
 	}
+	/* String reg = "<td[^>]*>(((?!<td)[\\s\\S])*?)</td>\\s*<td((?!<td)[\\s\\S])*?(<(input|select)[\\s\\S]*?name=\"([^\"]+)\"[\\s\\S]*?)</td>";
+	//String reg = "<td[\\s\\S]*?<input[^>]*>";
+	System.out.println("------正则匹配--------");
+	StringUtil.regStrings(body, reg, 0);*/
 
 }
