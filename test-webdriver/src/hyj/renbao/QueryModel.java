@@ -34,17 +34,30 @@ import hyj.login.RenBaoLoginA;
 public class QueryModel {
 	
 	public static CarModelRes queryCarModel(CarModelReq req) throws Exception{
+		CarModelRes res = new CarModelRes();
 		String cookie = RenBaoLoginA.login();
         String modelUrl="http://10.134.130.208:8000/prpall/vehicle/vehicleQuery.do?pageSize=50&pageNo=1";
         String modelRefUrl="http://10.134.130.208:8000/prpall/vehicle/prepareQuery.do?riskCode=DAA";
         Map<String, String> params=new HashMap<String, String>();
-		params.put("brandName",req.getBrandName());//车型名称
-		params.put("TCVehicleVO.vehicleName",req.getBrandName());//车型名称
-		params.put("TCVehicleVO.brandId", "");//车辆品牌型号
-		params.put("TCVehicleVO.brandName", "");//车辆品牌名称
-		params.put("TCVehicleVO.searchCode", "");//快速查询码
-		params.put("TCVehicleVO.vehicleAlias", "");//车型别名
-		params.put("TCVehicleVO.vehicleId", "");//车型编码
+  	    String brandName = com.ebtins.open.common.util.StringUtil.ObjectToString(req.getBrandName()).trim();//车型名称
+  	    String vehicleId = com.ebtins.open.common.util.StringUtil.ObjectToString(req.getExt().get("vehicleId")).trim();//车型编码
+  	    String vehicleBrandName = com.ebtins.open.common.util.StringUtil.ObjectToString(req.getExt().get("vehicleBrandName")).trim();//车辆品牌名称
+  	    String brandId = com.ebtins.open.common.util.StringUtil.ObjectToString(req.getExt().get("brandId")).trim();//车辆品牌型号
+  	    String searchCode = com.ebtins.open.common.util.StringUtil.ObjectToString(req.getExt().get("searchCode")).trim();//快速查询码
+  	    String vehicleAlias = com.ebtins.open.common.util.StringUtil.ObjectToString(req.getExt().get("vehicleAlias")).trim();//车型别名
+  	    if("".equals(brandName)&&"".equals(brandId)&&"".equals(vehicleBrandName)&&
+  	    		"".equals(searchCode)&&"".equals(vehicleAlias)&&"".equals(vehicleId)){
+  	    	res.getHeader().setResCode("10001");
+  	    	res.getHeader().setResMsg("查询条件为空！");
+  	    	return res;
+  	    }
+		params.put("brandName",brandName);
+		params.put("TCVehicleVO.vehicleName",brandName);
+		params.put("TCVehicleVO.vehicleId",vehicleId);
+		params.put("TCVehicleVO.brandId",brandId);
+		params.put("TCVehicleVO.brandName",vehicleBrandName);
+		params.put("TCVehicleVO.searchCode",searchCode);
+		params.put("TCVehicleVO.vehicleAlias",vehicleAlias);
 		params.put("carShipTaxPlatFormFlag", "");
 		params.put("riskCode", "DAA");
 		params.put("comCode", "44030700");
@@ -55,9 +68,22 @@ public class QueryModel {
 		params.put("quotationFlag", "");
 		params.put("taxFlag", "");
 		params.put("totalRecords_", "");
-		String body =RenBaoLoginA.post(modelUrl, params,"GBK",cookie,modelRefUrl);
+		String body="";
+		try {
+			body = RenBaoLoginA.post(modelUrl, params,"GBK",cookie,modelRefUrl);
+		} catch (Exception e) {
+			e.printStackTrace();
+			res.getHeader().setResCode("10001");
+  	    	res.getHeader().setResMsg("查询请求错误！");
+  	    	return res;
+		}
 		List<CarModelInfoVo> models = new ArrayList<CarModelInfoVo>();
 		RenbaoCarModelContent content = JSON.parseObject(body,RenbaoCarModelContent.class);
+		if("0".equals(content.getTotalRecords())){
+			res.getHeader().setResCode("10000");
+  	    	res.getHeader().setResMsg("无相关车型信息！");
+  	    	return res;
+		}
 		for(RenbaoCarModelData data :content.getData()){
 			CarModelInfoVo model = new CarModelInfoVo();
 			model.setModelCode(data.getVehicleId());//车型代码
@@ -74,8 +100,9 @@ public class QueryModel {
 			model.setCountryNature(data.getVehicleType());//国别性质：01-国产、02-进口、03-合资 ？
 			models.add(model);
 		}
-		CarModelRes res = new CarModelRes();
 		res.setCarModelList(models);
+		res.getHeader().setResCode("0000");
+		res.getHeader().setResMsg("成功");
 		System.out.println("res-->"+JSON.toJSONString(res));
 		return res;
 		/*Map<String,String> relateMap = new HashMap<String,String>();

@@ -91,7 +91,7 @@
 			<attribute name="maven.scope" value="compile"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="/ebtins-smart-proxy_bak"/>
+	<classpathentry kind="src" path="/ebtins-smart-proxy"/>
 	<classpathentry kind="lib" path="C:/Users/Administrator/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>

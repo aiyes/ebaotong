@@ -2,12 +2,18 @@ package hyj.login;
 
 import java.net.URI;
 
+import javax.xml.bind.JAXBException;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+
+import com.alibaba.fastjson.JSON;
+
+import ebtins.smart.proxy.company.renbao.dto.RenbaoRenewalContent;
 
 public class Test {
 
@@ -16,14 +22,19 @@ public class Test {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
-		HttpClient hc = new SSLClient();
-		//CloseableHttpClient hc = HttpClients.createDefault();
-		HttpGet request = new HttpGet();
-		request.setURI(new URI("https://webpolicy.sinosafe.com.cn/pcis/core/login/realLogin.jsp"));
-		HttpResponse response = hc.execute(request);
-		String strResult=EntityUtils.toString(response.getEntity());
-		System.out.println(strResult);
-		
+		RenbaoRenewalContent renewalContent = null;
+		renewalContent.getData();
+	}
+	public static String get(){
+		String str = "33";
+		try {
+			int i = 10/0;
+		} catch (Exception e) {
+			str = "44";
+			return str;
+		}
+		str = "55";
+		return str;
 	}
 
 }

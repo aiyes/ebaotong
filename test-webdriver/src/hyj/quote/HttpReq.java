@@ -49,7 +49,7 @@ import com.ebtins.open.common.constant.CarInsuranceConstant;
 import com.ebtins.open.common.util.IDCardUtil;
 import com.ebtins.open.common.util.TimeUtil;
 
-import ebtins.smart.proxy.company.huaan.HuaanConfig;
+import ebtins.smart.proxy.company.huaan.util.HuaanConfig;
 import ebtins.smart.proxy.company.huaan.util.HuaanUtil;
 import ebtins.smart.proxy.company.huaan.util.HuaanVerifyQuoteReqUtil;
 import ebtins.smart.proxy.conf.Constants;

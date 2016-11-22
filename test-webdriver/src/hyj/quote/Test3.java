@@ -27,11 +27,11 @@ import com.ebtins.open.common.constant.CommonConstants;
 import com.ebtins.open.common.util.StringUtil;
 import com.ebtins.open.common.util.TimeUtil;
 
-import ebtins.smart.proxy.company.huaan.HuaanConfig;
 import ebtins.smart.proxy.company.huaan.dto.AttributeVo;
 import ebtins.smart.proxy.company.huaan.dto.DataObjVo;
 import ebtins.smart.proxy.company.huaan.dto.ReqDwData;
 import ebtins.smart.proxy.company.huaan.dto.ResContent;
+import ebtins.smart.proxy.company.huaan.util.HuaanConfig;
 import ebtins.smart.proxy.controller.VerifyInput;
 import ebtins.smart.proxy.util.ResultBuilder;
 

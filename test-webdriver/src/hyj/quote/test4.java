@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 
 import org.junit.Test;
 
-import ebtins.smart.proxy.company.huaan.HuaanConfig;
+import ebtins.smart.proxy.company.huaan.util.HuaanConfig;
 import ebtins.smart.proxy.company.huaan.util.HuaanUtil;
 
 /**

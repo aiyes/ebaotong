@@ -21,7 +21,7 @@ public class StringUtil {
 	public static String urlDeCode(String encodeStr,String encode){
 		String deString = "";
 		try {
-			 deString = URLDecoder.decode(encodeStr,"utf-8");
+			 deString = URLDecoder.decode(encodeStr,encode);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
