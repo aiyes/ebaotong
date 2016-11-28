@@ -3,16 +3,33 @@
  */
 package hyj.renbao;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.ebtins.dto.open.CarLicenseInfoVo;
 import com.ebtins.dto.open.CarModelInfoVo;
 import com.ebtins.dto.open.CarOrderRelationInfoVo;
 import com.ebtins.dto.open.CarOwnerInfoVo;
+import com.ebtins.dto.open.CarQuoteInfoVo;
 import com.ebtins.dto.open.CarQuoteInsItemVo;
 import com.ebtins.dto.open.CarQuoteReq;
+import com.ebtins.dto.open.CarQuoteRes;
+import com.ebtins.dto.open.CarRenewalRes;
+import com.ebtins.open.common.constant.CarInsuranceConstant;
+import com.ebtins.open.common.util.StringUtil;
+import com.ebtins.open.common.util.ValidatorUtil;
 
+import ebtins.smart.proxy.company.huaan.dto.ResContent;
+import ebtins.smart.proxy.company.huaan.util.HuaanUtil;
+import ebtins.smart.proxy.company.renbao.dto.CiCarShipTax;
+import ebtins.smart.proxy.company.renbao.dto.CiInsureDemand;
+import ebtins.smart.proxy.company.renbao.dto.PrpCitemKind;
+import ebtins.smart.proxy.company.renbao.dto.RenbaoBiInsure;
+import ebtins.smart.proxy.company.renbao.dto.RenbaoQuoteContent;
 import ebtins.smart.proxy.company.renbao.util.RenbaoConfig;
 import ebtins.smart.proxy.company.renbao.util.RenbaoUtil;
 import hyj.login.RenBaoLoginA;
@@ -26,1667 +43,103 @@ import hyj.login.RenBaoLoginA;
  */
 
 public class Quote {
-	
-	public void getQuote(CarQuoteReq req) throws Exception{
+	public CarQuoteRes getQuote(CarQuoteReq req) throws Exception{
+		 String body = "{'totalRecords':1,'data':[{'ciDemandVos':[],'biInsuredemandVoList':[{'prpCfixations':[{'realProfits':0,'operationInfo':'1','riskClass':'A','riskPremium':100,'taxorAppend':5.6,'flag':'','discount':95,'profits':5,'cost':4.31,'payMentR':38,'basePremium':100,'basePayMentR':30.44,'costRate':35,'operateTimeForHis':null,'signPremium':100,'prpCmain':null,'responseCode':'','poundAge':16.69,'id':{'proposalNo':'','riskCode':'DAA'},'riskSumPremium':0,'profitClass':'','isQuotation':'','remark':'','realDisCount':0,'realPayMentR':0,'insertTimeForHis':null,'errorMessage':''}],'ciInsureDemandDAA':{'policyadjustvalue':0,'tonCount':0,'frameNo':'','lastpolicyexpiredate':null,'demandNo':'V0101PICC440316001480313726689','demandeffectendtime':null,'insurerArea':'','preferentialDay':0,'commissionRate':0,'resureFundFee':0,'previousPay':0,'lastpolicyquerydate':null,'extendChar1':'','proposalNo':'','responseRemark':null,'premium':0,'operatorCode':'','enrollDate':null,'districtCoeff':0,'chgVehicleMessage':'','ciCommissionMessage':{'ciCertificates':[{'certificateValidDate':{'date':19,'day':1,'timezoneOffset':-480,'year':103,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1053273600000},'certificateId':{'certificateId':0,'demandNo':'V0101PICC440316001480313726689'},'ciCommissionMessage':null,'certificateExpireDate':{'date':18,'day':3,'timezoneOffset':-480,'year':116,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1463500800000}},{'certificateValidDate':{'date':28,'day':4,'timezoneOffset':-480,'year':116,'month':3,'hours':0,'seconds':0,'minutes':0,'time':1461772800000},'certificateId':{'certificateId':1,'demandNo':'V0101PICC440316001480313726689'},'ciCommissionMessage':null,'certificateExpireDate':{'date':17,'day':5,'timezoneOffset':-480,'year':119,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1558022400000}}],'newVehicleEffectReason':'','commissionRateUpper':1,'individualProducerCode':'440321100061','practiceCertificateCode':'','demandNo':'V0101PICC440316001480313726689','groupCompany':'','producerEffectReason':'','ciInsureDemandContracts':[{'operateTimeForHis':null,'ciCommissionMessage':null,'contractExpireDate':{'date':18,'day':3,'timezoneOffset':-480,'year':116,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1463500800000},'contractValidDate':{'date':21,'day':2,'timezoneOffset':-480,'year':113,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1369065600000},'proposalno':'','insertTimeForHis':null,'contractno':'440321112020600','id':{'serialno':1,'demandNo':'V0101PICC440316001480313726689'}},{'operateTimeForHis':null,'ciCommissionMessage':null,'contractExpireDate':{'date':30,'day':3,'timezoneOffset':-480,'year':115,'month':8,'hours':0,'seconds':0,'minutes':0,'time':1443542400000},'contractValidDate':{'date':2,'day':1,'timezoneOffset':-480,'year':114,'month':5,'hours':0,'seconds':0,'minutes':0,'time':1401638400000},'proposalno':'','insertTimeForHis':null,'contractno':'440321114061200','id':{'serialno':2,'demandNo':'V0101PICC440316001480313726689'}},{'operateTimeForHis':null,'ciCommissionMessage':null,'contractExpireDate':{'date':17,'day':5,'timezoneOffset':-480,'year':119,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1558022400000},'contractValidDate':{'date':19,'day':0,'timezoneOffset':-480,'year':113,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1368892800000},'proposalno':'','insertTimeForHis':null,'contractno':'440321116051900','id':{'serialno':3,'demandNo':'V0101PICC440316001480313726689'}}],'accountNumber':4000021219200320544,'accountName':'深圳市宜保通保险销售有限公司','ciInsureDemand':null,'bankCode':'工商银行','bankName':'中国工商银行深圳市红围支行','agentTypeCode':'3','operateTimeForHis':null,'certificateNo':'203131000000800','individualProducerName':'深圳市宜保通保险销售有限公司','claimEffectReason':'','insertTimeForHis':null,'companyCommissionRateUpper':1},'ciRiskWarningClaimItems':[],'reinsureFlag':'','usbkey':'','carOwner':'','ciCoveragePremiums':[{'pureRiskPremium':1361.59556,'pureRiskPremiumFlag':'1','id':{'coverageCode':'0101200','queryNo':'V0101PICC440316001480313726689','modelCode':'BJHASXUB0002'}}],'rescueFundRate':0,'lastproducercode':'','disPlacement':'','posNo':'','lastpolicybilldate':null,'carStatus':'','flag':'','ineffectualDate':null,'dummyresponseremark':'','rateRloatFlag':'','lastEffectiveDate':null,'certificateDate':null,'licenseColorCode':'','demandTime':{'date':28,'day':1,'timezoneOffset':-480,'year':116,'month':10,'hours':14,'seconds':27,'minutes':15,'time':1480313727076},'lastpolicytotalpremium':null,'exhaustCapacity':0,'carKindCode':'','amount':0,'taxFlag':'','brandName':'','computerip':'','preferentialPremium':0,'adjustEnd':null,'remark':'','restricFlag':'','preferentialFormula':'','requestRemark':null,'benchMarkPremium':0,'seatCount':0,'peccancyAdjustReason':'','pmVehicleMessage':'','coverageCode':'','prevalidno':'','busilastyearstartdate':null,'driverRateReason':'','busiInsurerArea':'','manufacturerName':'','lastyearenddate':null,'validCheckDate':null,'ipPart':'','coverageType':'','transferDate':null,'engineNo':'','adjustStart':null,'driverCoeff':0,'dummyrequestremark':'','areaCode':'','netPremium':0,'endValidDate':null,'useNatureCode':'','policyNo':'','lastExpireDate':null,'peccancyCoeff':0,'busiLastYearEndDate':null,'licenseNo':'','comCode':'44030716','taxActual':0,'proconfirmenddate':'','vehicleCategory':'','modelCode':'','insertTimeForHis':null,'ciLastPolicyInfo':null,'taxPremium':0,'startDate':null,'lastBillDate':null,'lateFee':0,'salePrice':'','haulage':'','taxTotal':'','fuelType':'','makeDate':null,'pmUserType':'','basePremium':0,'operateTimeForHis':null,'useTypeSource':'','claimCoeff':0,'wholeWeight':'','taxRate':0,'useTypeMessage':'','ownerName':'','licenseType':'','claimAdjustReason':'','checkDate':null,'lastpolicyeffectivedate':null,'channeltype':'','lastyearstartdate':null,'querypastdate':null,'endDate':null,'vehicleOwnerMessageType':'','brandCName':'','dzflag':'','noVehicleMessageType':'','districtRateReason':'','proconfirmstartdate':''},'ciInsureDemandRisk':null,'errMessage':'','prpCitemCars':[{'tonCount':0,'endSiteName':'','frameNo':'','licenseFlag':'','useYears':0,'salesNumber':'','insuredTypeCode':'','isCriterion':0,'modelCodeAlias':'','fullendor':'','prpCcarModels':[],'enrollDate':null,'operationArea':'','hkLicenseNo':'','prpCtrafficDetails':[],'groupEndDate':'','versionNo':'','carProofNo':'','id':null,'monopolyCode':'','exhaustScale':0,'businessClassCode':'','isDropinVisitInsure':0,'carId':'','transferVehicleFlag':'','monopolyFlag':'','carCustType':'','flag':'','runAreaCode':'','vehicleBrand':'','countryCode':'','riskCode':'','prpCmain':null,'salesPhone':'','driverType':'','licenseColorCode':'','carLoanFlag':'','startSiteName':'','lossRatio':'','carKindCode':'','carDealerName':'','brandName':'','invoiceNo':'','isRemote':'','runMiles':0,'clauseType':'','remark':'','seatCount':0,'prpCcarDevices':[],'licenseNo1':'','loanVehicleFlag':'','transferDate':null,'engineNo':'','newCarFlag':'','carDealerCode':'','licenseNo3':'','licenseNo2':'','hkFlag':'','vehicleTypeDescription':'','useNatureCode':'','groupStartDate':'','coefficient2':1,'licenseNo':'','coefficient1':1,'coefficient3':0.1000000000000000055511151231257827021181583404541015625,'currency':'','carCounts':0,'rateCode':'','isSilageHarvester':'','actualValue':0,'vehicleCategory':'','monopolyName':'','modelCode':'','insertTimeForHis':null,'carProofDate':null,'purchasePrice':0,'colorCode':'','certifiCateDate':null,'vehicleType':'','fuelType':'','makeDate':null,'aliasName':'','carProofType':'','prpCitemCarExts':[],'modelDemandNo':'','safeDevice':'','runAreaName':'','vinNo':'','operateTimeForHis':null,'cylinderCount':0,'noDamageYears':'','energyType':'','licenseType':'','rationName':'','discountType':'','countryNature':'','noNlocalFlag':'','groupCode':'','carUsage':'','salesName':'','otherNature':'','carInsuredRelation':'','carLotEquQuality':0}],'ciEndorDemandLossListBI':[],'prpCprofitFactors':[{'prpCprofitFactorFixes':[],'profitName':'无赔款优待及上年赔款记录','chooseFlag':'1','flag':'','rate':100,'id':{'profitCode':'C01','proposalNo':'','conditionCode':'C0104','serialNo':0},'upperRate':130,'lowerRate':100,'operateTimeForHis':null,'riskCode':'DAA','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'prpCmain':null},{'prpCprofitFactorFixes':[],'profitName':'自主渠道系数','chooseFlag':'1','flag':'','rate':90,'id':{'profitCode':'C02','proposalNo':'','conditionCode':'C0206','serialNo':0},'upperRate':125,'lowerRate':75,'operateTimeForHis':null,'riskCode':'DAA','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'prpCmain':null},{'prpCprofitFactorFixes':[],'profitName':'自主核保优惠系数','chooseFlag':'1','flag':'','rate':105.555556,'id':{'profitCode':'C03','proposalNo':'','conditionCode':'C03','serialNo':0},'upperRate':125,'lowerRate':75,'operateTimeForHis':null,'riskCode':'DAA','condition':'自主核保优惠系数','insertTimeForHis':null,'prpCmain':null}],'ciInsureRiskItem':{'fleetadjustvalue':0,'managementAdjustLower':0,'noClaimRecordReason':'','travelAdjustValue':0,'lossAdjustValue':0,'claimAmountValue':0,'claimAdjustValue':0,'demandNo':'V0101PICC440316001480313726689','peccancyRecordValue':0,'noKindAdjustReason':'','driverAdjustReason':'','kindAdjustValue':0,'proposalNo':'','claimNoAdjustReason':'11','operateTimeForHis':null,'insureInDoorReason':'','noPeccancyAdjustReason':'','insureInDoorValue':0,'claimRecordReason':'','adjustValueReason':'','experienceAdjustUpper':0,'driverAdjustValue':0,'vehicleModelAdjustLower':0,'managementAdjustUpper':0,'theftAdjustValue':0,'lossadjustreason':'','noClaimAmountReason':'','claimAdjustReason':'B31','travelAdjustReason':'','policyNo':'','safeAdjust':0,'loyaltyAdjustValue':0,'vehicleModelAdjustUpper':0,'mileageAdjustValue':0,'noPeccancyRecordReason':'','peccancyAdjustValue':0,'theftAdjustReason':'','loyalltyAdjustReason':'','kindAdjustReason':'','claimRecordValue':0,'experienceAdjustLower':0,'peccancyRecordReason':'','claimAmountReason':'','insertTimeForHis':null,'isContinuouspPolicy':'','mileageAdjustReason':'','peccancyAdjustReason':'','loyaltyAdjustReason':''},'key1':'','ciInsureDemandPayListBI':[],'ciEndorDemandPayListBI':[],'prpCreplenishFactors':[],'lossMessage':'','ciInsureDemandLossListBI':[],'ciRiskWarningClaimItems':[],'ciInsureDemandCheckVo':{'checkQuestion':'','validCheckDate':'','demandNo':'','riskCode':'','checkCode':'','errMessage':'','renewalFlag':'','flag':'','checkAnswer':''},'prpCitemKinds':[{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':1,'serialNo':0},'kindCode':'050202','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':1,'serialNo':0},'kindCode':'050202','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':1,'serialNo':0},'kindCode':'050202','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':1},'currency':'CNY','kindCode':'050202','operateTimeForHis':null,'totalProfit':104.74,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'Y','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':1361.59556,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':1990.02,'currency1':'CNY','currency2':'','netPremium':1877.38,'modeCode':'','startHour':0,'kindName':'车辆损失险','deductibleRate':0,'rate':0,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':1},'currency':'CNY','kindCode':'050202','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':112.64,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00010 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050051','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':102800,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':2094.76},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':3,'serialNo':0},'kindCode':'050501','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':3,'serialNo':0},'kindCode':'050501','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':3,'serialNo':0},'kindCode':'050501','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':3},'currency':'CNY','kindCode':'050501','operateTimeForHis':null,'totalProfit':32.73,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':621.83,'currency1':'CNY','currency2':'','netPremium':586.63,'modeCode':'','startHour':0,'kindName':'全车盗抢险','deductibleRate':0,'rate':0.338,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':3},'currency':'CNY','kindCode':'050501','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':35.2,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00010 000','basePremium':78,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050054','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':102800,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':654.56},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':5,'serialNo':0},'kindCode':'050602','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':5,'serialNo':0},'kindCode':'050602','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':5,'serialNo':0},'kindCode':'050602','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':5},'currency':'CNY','kindCode':'050602','operateTimeForHis':null,'totalProfit':92.7,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'Y','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':1761.3,'currency1':'CNY','currency2':'','netPremium':1661.6,'modeCode':'','startHour':0,'kindName':'第三者责任险','deductibleRate':0,'rate':0,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':5},'currency':'CNY','kindCode':'050602','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':99.7,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00010 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050052','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':500000,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':1854},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':7,'serialNo':0},'kindCode':'050711','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':7,'serialNo':0},'kindCode':'050711','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':7,'serialNo':0},'kindCode':'050711','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':7},'currency':'CNY','kindCode':'050711','operateTimeForHis':null,'totalProfit':10.5,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'Y','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':199.5,'currency1':'CNY','currency2':'','netPremium':188.21,'modeCode':'','startHour':0,'kindName':'司机座位责任险','deductibleRate':0,'rate':0.1365,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':7},'currency':'CNY','kindCode':'050711','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':11.29,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00010 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050053','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':100000,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':210},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':9,'serialNo':0},'kindCode':'050712','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':9,'serialNo':0},'kindCode':'050712','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':9,'serialNo':0},'kindCode':'050712','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':9},'currency':'CNY','kindCode':'050712','operateTimeForHis':null,'totalProfit':10,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'Y','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':190,'currency1':'CNY','currency2':'','netPremium':179.25,'modeCode':'','startHour':0,'kindName':'乘客座位责任险','deductibleRate':0,'rate':0.065,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':9},'currency':'CNY','kindCode':'050712','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':10.75,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00010 000','basePremium':0,'operateTimeForHis':null,'unitAmount':50000,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050053','quantity':4,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':50000,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':200},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':11,'serialNo':0},'kindCode':'050211','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':11,'serialNo':0},'kindCode':'050211','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':11,'serialNo':0},'kindCode':'050211','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':11},'currency':'CNY','kindCode':'050211','operateTimeForHis':null,'totalProfit':20,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':380,'currency1':'CNY','currency2':'','netPremium':358.49,'modeCode':'','startHour':0,'kindName':'车身划痕损失险','deductibleRate':0,'rate':0,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':11},'currency':'CNY','kindCode':'050211','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':21.51,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00010 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050059','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':2000,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':400},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':13,'serialNo':0},'kindCode':'050311','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':13,'serialNo':0},'kindCode':'050311','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':13,'serialNo':0},'kindCode':'050311','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':13},'currency':'CNY','kindCode':'050311','operateTimeForHis':null,'totalProfit':6.17,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':117.19,'currency1':'CNY','currency2':'','netPremium':110.56,'modeCode':'','startHour':0,'kindName':'自燃损失险','deductibleRate':0,'rate':0.078,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':13},'currency':'CNY','kindCode':'050311','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':6.63,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00010 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050057','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':102800,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':123.36},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':15,'serialNo':0},'kindCode':'050461','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':15,'serialNo':0},'kindCode':'050461','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':15,'serialNo':0},'kindCode':'050461','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':15},'currency':'CNY','kindCode':'050461','operateTimeForHis':null,'totalProfit':5.24,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':99.5,'currency1':'CNY','currency2':'','netPremium':93.87,'modeCode':'','startHour':0,'kindName':'涉水行驶损失险','deductibleRate':0,'rate':5,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':15},'currency':'CNY','kindCode':'050461','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':5.63,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00010 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050060','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':104.74},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':2,'serialNo':0},'kindCode':'050930','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':2,'serialNo':0},'kindCode':'050930','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':2,'serialNo':0},'kindCode':'050930','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':2},'currency':'CNY','kindCode':'050930','operateTimeForHis':null,'totalProfit':15.71,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':298.5,'currency1':'CNY','currency2':'','netPremium':281.6,'modeCode':'','startHour':0,'kindName':'车辆损失险-不计免赔','deductibleRate':0,'rate':15,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':2},'currency':'CNY','kindCode':'050930','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':16.9,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00000 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050066','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':314.21},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':4,'serialNo':0},'kindCode':'050932','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':4,'serialNo':0},'kindCode':'050932','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':4,'serialNo':0},'kindCode':'050932','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':4},'currency':'CNY','kindCode':'050932','operateTimeForHis':null,'totalProfit':6.55,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':124.36,'currency1':'CNY','currency2':'','netPremium':117.32,'modeCode':'','startHour':0,'kindName':'全车盗抢险-不计免赔','deductibleRate':0,'rate':20,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':4},'currency':'CNY','kindCode':'050932','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':7.04,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00000 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050066','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':130.91},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':6,'serialNo':0},'kindCode':'050931','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':6,'serialNo':0},'kindCode':'050931','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':6,'serialNo':0},'kindCode':'050931','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':6},'currency':'CNY','kindCode':'050931','operateTimeForHis':null,'totalProfit':13.91,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':264.2,'currency1':'CNY','currency2':'','netPremium':249.25,'modeCode':'','startHour':0,'kindName':'第三者责任险-不计免赔','deductibleRate':0,'rate':15,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':6},'currency':'CNY','kindCode':'050931','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':14.95,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00000 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050066','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':278.1},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':8,'serialNo':0},'kindCode':'050933','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':8,'serialNo':0},'kindCode':'050933','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':8,'serialNo':0},'kindCode':'050933','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':8},'currency':'CNY','kindCode':'050933','operateTimeForHis':null,'totalProfit':1.58,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':29.93,'currency1':'CNY','currency2':'','netPremium':28.24,'modeCode':'','startHour':0,'kindName':'司机座位责任险-不计免赔','deductibleRate':0,'rate':15,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':8},'currency':'CNY','kindCode':'050933','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':1.69,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00000 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050066','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':31.5},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':10,'serialNo':0},'kindCode':'050934','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':10,'serialNo':0},'kindCode':'050934','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':10,'serialNo':0},'kindCode':'050934','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':10},'currency':'CNY','kindCode':'050934','operateTimeForHis':null,'totalProfit':1.5,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':28.5,'currency1':'CNY','currency2':'','netPremium':26.89,'modeCode':'','startHour':0,'kindName':'乘客座位责任险-不计免赔','deductibleRate':0,'rate':15,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':10},'currency':'CNY','kindCode':'050934','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':1.61,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00000 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050066','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':30},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':12,'serialNo':0},'kindCode':'050937','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':12,'serialNo':0},'kindCode':'050937','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':12,'serialNo':0},'kindCode':'050937','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':12},'currency':'CNY','kindCode':'050937','operateTimeForHis':null,'totalProfit':3,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':57,'currency1':'CNY','currency2':'','netPremium':53.77,'modeCode':'','startHour':0,'kindName':'车身划痕损失险不计免赔','deductibleRate':0,'rate':15,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':12},'currency':'CNY','kindCode':'050937','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':3.23,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00000 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050066','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':60},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':14,'serialNo':0},'kindCode':'050935','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':14,'serialNo':0},'kindCode':'050935','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':14,'serialNo':0},'kindCode':'050935','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':14},'currency':'CNY','kindCode':'050935','operateTimeForHis':null,'totalProfit':1.23,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':23.44,'currency1':'CNY','currency2':'','netPremium':22.11,'modeCode':'','startHour':0,'kindName':'自燃损失险不计免赔','deductibleRate':0,'rate':20,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':14},'currency':'CNY','kindCode':'050935','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':1.33,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00000 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050066','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':24.67},{'ratePeriod':0,'prpCprofits':[{'handlerCode':'11095373','prpCprofitDetails':[{'profitName':'无赔款优待及上年赔款记录','kindName':'','chooseFlag':'1','profitRateMin':100,'fieldValue':0,'flag':'','id':{'profitCode':'C01','proposalNo':'','profitType':'1','itemKindNo':16,'serialNo':0},'kindCode':'050938','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'新保或上年发生1次赔款','insertTimeForHis':null,'conditionCode':'C0104','profitRateMax':130,'profitRate':100},{'profitName':'自主渠道系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C02','proposalNo':'','profitType':'1','itemKindNo':16,'serialNo':0},'kindCode':'050938','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'经纪及代理渠道业务优惠系数','insertTimeForHis':null,'conditionCode':'C0206','profitRateMax':125,'profitRate':90},{'profitName':'自主核保优惠系数','kindName':'','chooseFlag':'1','profitRateMin':75,'fieldValue':0,'flag':'','id':{'profitCode':'C03','proposalNo':'','profitType':'1','itemKindNo':16,'serialNo':0},'kindCode':'050938','prpCprofit':null,'profitPeriod':0,'operateTimeForHis':null,'riskCode':'','condition':'自主核保优惠系数','insertTimeForHis':null,'conditionCode':'C03  ','profitRateMax':125,'profitRate':105.555556}],'minusFlag':'','prpCitemKind':null,'disCount':0.95,'flag':'','id':{'proposalNo':'','profitType':'1','itemKindNo':16},'currency':'CNY','kindCode':'050938','operateTimeForHis':null,'totalProfit':0.79,'approverCode':'','riskCode':'DAA','operatorCode':'99355911','insertTimeForHis':null,'inputDate':{'date':22,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1479744000000}}],'calculateFlag':'N','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':14.92,'currency1':'CNY','currency2':'','netPremium':14.08,'modeCode':'','startHour':0,'kindName':'涉水行驶损失险不计免赔','deductibleRate':0,'rate':15,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':16},'currency':'CNY','kindCode':'050938','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':0.84,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':0,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 00000 000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050066','quantity':0,'value':0,'disCount':0.95,'itemDetailName':'车辆','amount':0,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':15.71}],'prpCitemCarExt':{'lastDamagedBI':0,'noDamYearsCI':0,'lastDamagedCI':0,'noDamYearsBI':0,'thisDamagedB':0,'thisOffenceCI':0,'thisDamagedA':0,'damFloatRatioCI':0,'flag':'','thisDamagedCI':0,'lastOffenceCI':0,'thisDamagedBI':0,'id':{'proposalNo':'','itemNo':1},'offFloatRatioCI':0,'noOffYearsCI':0,'operateTimeForHis':null,'rateRloatFlag':'','riskCode':'DAA','lastDamagedA':0,'lastDamagedB':0,'insertTimeForHis':null,'prpCitemCar':null},'ciInsureDemandCheckVoList':[],'claimsMessage':'','ciInsureDemandRepets':[],'ciEndorDemandDAA':{'formula':'','driverRateReason':'','lastpolicyexpiredate':null,'formerTax':0,'transferDate':null,'preferentialDay':'','commissionRate':0,'resureFundFee':0,'lastpolicyquerydate':null,'cancelTax':0,'driverCoeff':0,'responseRemark':'','applyNo':'','dummyrequestremark':'','areaCode':'','operatorCode':'','netPremium':0,'districtCoeff':0,'policyNo':'','endorseReasonDesc':'','lastExpireDate':null,'peccancyCoeff':0,'comCode':'','reinsureFlag':'','currentTax':0,'amendBasedPremium':0,'ciCoveragePremiums':[],'insertTimeForHis':null,'lastproducercode':'','taxPremium':0,'lastBillDate':null,'isAmendTax':'','coveragecode':'','lateFee':0,'lastpolicybilldate':null,'ciEndorDemandLosses':[],'flag':'','dummyresponseremark':'','coveragetype':'','operateTimeForHis':null,'claimCoeff':0,'lastEffectiveDate':null,'taxRate':0,'endorseDemandNo':'','demandTime':null,'claimAdjustReason':'','ptext':'','policyValidNo':'','lastpolicytotalpremium':null,'endorseReasonCode':'','lastpolicyeffectivedate':null,'taxAmendPremium':0,'chgPremium':0,'amendStandardPremium':0,'taxFlag':'','endorseNo':'','endorseValidNo':'','vehicleOwnerMessageType':'','remark':'','amendquerypastdate':null,'restricFlag':'','ciEndorDemandPaies':[],'rateFloatFlag':'','requestRemark':'','drawReason':'','taxAmendDeclare':'','peccancyAdjustReason':'','disTrictRateReason':''},'ciEndorRiskItem':null,'errorMessageVo':{'errorCode':'0000','flag':'0','errorMessage':'1'},'ciLastPolicyInfo':null}],'prpCsalesFixes':[],'errMessage':null,'cIInsureMotorFlag':'1','ciInsureVOList':[{'prpCfixations':[{'realProfits':0,'operationInfo':'折扣以系统报价为准','riskClass':'B','riskPremium':37945,'taxorAppend':5.6,'flag':'','discount':100,'profits':5,'cost':4.31,'payMentR':60.68,'basePremium':76914.88,'basePayMentR':65.13,'costRate':0,'operateTimeForHis':null,'signPremium':73587,'prpCmain':null,'responseCode':'','poundAge':27.5,'id':{'proposalNo':'','riskCode':'DZA'},'riskSumPremium':0,'profitClass':'','isQuotation':'','remark':'','realDisCount':0,'realPayMentR':0,'insertTimeForHis':null,'errorMessage':''}],'ciInsureDemandRisk':null,'errMessage':'','ciRiskWarningClaimItems':[],'ciInsureDemandCheckVo':{'checkQuestion':'','validCheckDate':'','demandNo':'','riskCode':'','checkCode':'','errMessage':'','renewalFlag':'','flag':'','checkAnswer':''},'ciInsureDemand':{'policyadjustvalue':0,'tonCount':0,'frameNo':'','lastpolicyexpiredate':null,'demandNo':'01PICC440316001480313726346433','demandeffectendtime':null,'insurerArea':'','preferentialDay':0,'commissionRate':0,'resureFundFee':0,'previousPay':0,'lastpolicyquerydate':null,'extendChar1':'','proposalNo':'','responseRemark':null,'premium':950,'operatorCode':'99355911','enrollDate':null,'districtCoeff':0,'chgVehicleMessage':'','ciCommissionMessage':{'ciCertificates':[{'certificateValidDate':{'date':19,'day':1,'timezoneOffset':-480,'year':103,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1053273600000},'certificateId':{'certificateId':1,'demandNo':'01PICC440316001480313726346433'},'ciCommissionMessage':null,'certificateExpireDate':{'date':18,'day':3,'timezoneOffset':-480,'year':116,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1463500800000}},{'certificateValidDate':{'date':28,'day':4,'timezoneOffset':-480,'year':116,'month':3,'hours':0,'seconds':0,'minutes':0,'time':1461772800000},'certificateId':{'certificateId':2,'demandNo':'01PICC440316001480313726346433'},'ciCommissionMessage':null,'certificateExpireDate':{'date':17,'day':5,'timezoneOffset':-480,'year':119,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1558022400000}}],'newVehicleEffectReason':'','commissionRateUpper':0.04,'individualProducerCode':'440321100061','practiceCertificateCode':'','demandNo':'01PICC440316001480313726346433','groupCompany':'','producerEffectReason':'','ciInsureDemandContracts':[{'operateTimeForHis':null,'ciCommissionMessage':null,'contractExpireDate':{'date':18,'day':3,'timezoneOffset':-480,'year':116,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1463500800000},'contractValidDate':{'date':21,'day':2,'timezoneOffset':-480,'year':113,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1369065600000},'proposalno':'','insertTimeForHis':null,'contractno':'440321112020600','id':{'serialno':1,'demandNo':'01PICC440316001480313726346433'}},{'operateTimeForHis':null,'ciCommissionMessage':null,'contractExpireDate':{'date':30,'day':3,'timezoneOffset':-480,'year':115,'month':8,'hours':0,'seconds':0,'minutes':0,'time':1443542400000},'contractValidDate':{'date':2,'day':1,'timezoneOffset':-480,'year':114,'month':5,'hours':0,'seconds':0,'minutes':0,'time':1401638400000},'proposalno':'','insertTimeForHis':null,'contractno':'440321114061200','id':{'serialno':2,'demandNo':'01PICC440316001480313726346433'}},{'operateTimeForHis':null,'ciCommissionMessage':null,'contractExpireDate':{'date':17,'day':5,'timezoneOffset':-480,'year':119,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1558022400000},'contractValidDate':{'date':19,'day':0,'timezoneOffset':-480,'year':113,'month':4,'hours':0,'seconds':0,'minutes':0,'time':1368892800000},'proposalno':'','insertTimeForHis':null,'contractno':'440321116051900','id':{'serialno':3,'demandNo':'01PICC440316001480313726346433'}}],'accountNumber':4000021219200320544,'accountName':'深圳市宜保通保险销售有限公司','ciInsureDemand':null,'bankCode':'工商银行','bankName':'中国工商银行深圳市红围支行','agentTypeCode':'3','operateTimeForHis':null,'certificateNo':'203131000000800','individualProducerName':'深圳市宜保通保险销售有限公司','claimEffectReason':'','insertTimeForHis':null,'companyCommissionRateUpper':0},'ciRiskWarningClaimItems':[],'reinsureFlag':'0','usbkey':'','carOwner':'','ciCoveragePremiums':[],'rescueFundRate':0,'lastproducercode':'','disPlacement':'','posNo':'','lastpolicybilldate':null,'carStatus':'','flag':'','ineffectualDate':null,'dummyresponseremark':'','rateRloatFlag':'01','lastEffectiveDate':null,'certificateDate':null,'licenseColorCode':'','demandTime':{'date':28,'day':1,'timezoneOffset':-480,'year':116,'month':10,'hours':14,'seconds':28,'minutes':15,'time':1480313728071},'lastpolicytotalpremium':null,'exhaustCapacity':0,'carKindCode':'','amount':122000,'taxFlag':'','brandName':'','computerip':'','preferentialPremium':0,'adjustEnd':null,'remark':'成功','restricFlag':'','preferentialFormula':'','requestRemark':null,'benchMarkPremium':950,'seatCount':0,'peccancyAdjustReason':'','pmVehicleMessage':'','coverageCode':'','prevalidno':'','busilastyearstartdate':null,'driverRateReason':'','busiInsurerArea':'','manufacturerName':'','lastyearenddate':null,'validCheckDate':null,'ipPart':'','coverageType':'','transferDate':null,'engineNo':'','adjustStart':null,'driverCoeff':0,'dummyrequestremark':'','areaCode':'','netPremium':0,'endValidDate':null,'useNatureCode':'','policyNo':'','lastExpireDate':null,'peccancyCoeff':0,'busiLastYearEndDate':null,'licenseNo':'','comCode':'44030716','taxActual':0,'proconfirmenddate':'','vehicleCategory':'','modelCode':'','insertTimeForHis':null,'ciLastPolicyInfo':null,'taxPremium':0,'startDate':null,'lastBillDate':{'date':28,'day':1,'timezoneOffset':-480,'year':116,'month':10,'hours':14,'seconds':28,'minutes':15,'time':1480313728071},'lateFee':0,'salePrice':'','haulage':'','taxTotal':'','fuelType':'','makeDate':null,'pmUserType':'','basePremium':950,'operateTimeForHis':null,'useTypeSource':'','claimCoeff':0,'wholeWeight':'','taxRate':0,'useTypeMessage':'','ownerName':'','licenseType':'','claimAdjustReason':'','checkDate':null,'lastpolicyeffectivedate':null,'channeltype':'','lastyearstartdate':null,'querypastdate':null,'endDate':null,'vehicleOwnerMessageType':'','brandCName':'','dzflag':'','noVehicleMessageType':'','districtRateReason':'','proconfirmstartdate':''},'prpCitemKinds':[{'ratePeriod':0,'prpCprofits':[],'calculateFlag':'Y','addressNo':0,'exchange2':0,'exchange1':0,'unit':'','pureRiskPremium':0,'amount1':0,'exchange3':0,'amount2':0,'endHour':24,'amount3':0,'buyDate':null,'currency3':'','premium':0,'currency1':'CNY','currency2':'','netPremium':896.23,'modeCode':'','startHour':0,'kindName':'交强险','deductibleRate':0,'rate':0,'dutyFlag':'2','id':{'proposalNo':'','itemKindNo':1},'currency':'CNY','kindCode':'050100','shortRateFlag':'2','modeName':'','familyName':'','insertTimeForHis':null,'projectCode':'1','model':'','taxPremium':53.77,'startDate':{'date':23,'day':5,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1482422400000},'adjustRate':1,'familyNo':1,'premium1':0,'premium2':0,'premium3':0,'riskPremium':0,'flag':' 100000000','basePremium':0,'operateTimeForHis':null,'unitAmount':0,'riskCode':'DZA','taxRate':6,'prpCmain':null,'itemNo':1,'itemCode':'0001','clauseCode':'050001','quantity':0,'value':0,'disCount':1,'itemDetailName':'车辆','amount':122000,'endDate':{'date':22,'day':5,'timezoneOffset':-480,'year':117,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1513872000000},'shortRate':100,'deductible':0,'benchMarkPremium':0}],'ciInsureTax':{'declareStatus':'0','taxPayerName':'','taxConditionCode':'T','calctaxFlag':'1','taxPayerIdentificationCode':'','sumTax':70,'policyNo':'','sumOverdue':0,'declareDate':'','demandNo':'01PICC440316001480313726346433','flag':'','annualTaxDue':70,'quotationNo':'','proposalNo':'','taxTermTypeCode':'08','operateTimeForHis':null,'taxDescription':'','sumTaxDefault':0,'ciInsureAnnualTaxes':[{'exceedDate':null,'overDue':0,'taxDepartment':'','taxStartDate':{'date':1,'day':2,'timezoneOffset':-480,'year':116,'month':10,'hours':0,'seconds':0,'minutes':0,'time':1477929600000},'flag':'1','ciInsureTax':null,'proposalNo':'','ciInsureTaxRates':[],'unitRate':'420.0','operateTimeForHis':null,'taxDue':70,'taxUnitTypeCode':'1','policyNo':'','totalAmount':70,'declareDate':null,'ciInsureDerateTaxes':[{'deductionDueProportion':0,'policyNo':'','deduction':0,'ciInsureAnnualTax':null,'taxDepartment':'','deductionDocumentNumber':'','flag':'','id':{'demandNo':'01PICC440316001480313726346433','serialNo':1},'quotationNo':'','proposalNo':'','operateTimeForHis':null,'taxDepartmentCode':'','deductionDueCode':'','deductionDueType':'','insertTimeForHis':null}],'taxLocationCode':'440300','taxDocumentNumber':'','id':{'demandNo':'01PICC440316001480313726346433','serialNo':1},'exceedDaysCount':0,'quotationNo':'','annualTaxAmount':420,'taxEndDate':{'date':31,'day':6,'timezoneOffset':-480,'year':116,'month':11,'hours':0,'seconds':0,'minutes':0,'time':1483113600000},'taxDepartmentCode':'','insertTimeForHis':null}],'insertTimeForHis':null,'taxRegistryNumber':'','taxAmountFlag':'1'},'ciInsureDemandLossList':[],'ciInsureDemandPayList':[],'ciEndorValid':null,'taxAbate':null,'errorMessageVo':{'errorCode':'0000','flag':'0','errorMessage':'折扣以系统报价为准'},'ciCarShipTax':{'taxpayerNo':'','thisPayTax':0,'policyNo':'','payStartDate':null,'sumPayTax':0,'carNumber':'','delayPayTax':0,'demandNo':'','taxPayerCertiCode':'','flag':'','poCategory':'','payId':'','poWeight':0,'taxFlag':'','freeNo':'','proposalNo':'','payEndDate':null,'remarks':'','taxPayerCertiType':'','taxComName':'','dutyPaidProofNo':'','prePayTax':0}}]}]}";
+		 Map<String,String> params =getQuoteParam(req);
+		 RenbaoQuoteContent quoteContent = JSON.parseObject(body,RenbaoQuoteContent.class);
+		 new QuoteSave().save(params, quoteContent);//保存
+		 return null;
+	}
+
+/*	
+	public CarQuoteRes getQuote(CarQuoteReq req) throws Exception{
 		 String cookie = RenBaoLoginA.login();
 		 String quoteUrl = "http://10.134.130.208:8000/prpall/business/caculatePremiunForFG.do";
 		 String quoteReferer = "http://10.134.130.208:8000/prpall/business/prepareEdit.do?bizType=PROPOSAL&editType=NEW";
+		 Map<String,String> params =getQuoteParam(req);
+		 System.out.println("quote_params-->"+params);
+		 String body = RenBaoLoginA.post(quoteUrl,params,"GBK",cookie,quoteReferer);//保费计算
+		 RenbaoQuoteContent quoteContent = JSON.parseObject(body,RenbaoQuoteContent.class);
+		 System.out.println("body-->"+body);
+		 System.out.println("quoteContent-->"+JSON.toJSONString(quoteContent));
+		 CarQuoteRes res = getResQuote(req,quoteContent);//封装报价
+		 System.out.println("renbao quote res-->"+JSON.toJSONString(res));
 		 
-		 String body = RenBaoLoginA.post(quoteUrl,getQuoteParam(req),"GBK",cookie,quoteReferer);
-		 System.out.println(body);
-	}
-	public Map<String,String> getParams(CarQuoteReq req) throws Exception{
+		 //new QuoteSave().save(params, quoteContent);//保存
+		 return res;
+	}*/
+
+	public Map<String,String> getQuoteParam(CarQuoteReq req) throws Exception{
+		
+		Map<String,Object> paramObject = RenbaoConfig.getQuoteParamsMap();//参数模板
 		Map<String,String> params = new HashMap<String,String>();
-		params.putAll(setCarModelInfo(req));//车型信息
+		for(String key :paramObject.keySet()){
+			params.put(key,(String) paramObject.get(key));
+		}
+	    params.putAll(setCarModelInfo(req));//车型信息
 		params.putAll(setCarLicenseInfo(req));//行驶证及车辆信息
 		params.putAll(SetRelatePersion(req));//关系人-投保人、被保人、车主
 		params.putAll(setKindItemBiCI(req));//商业险、交强险
-		System.out.println(params);
-		return params;
-	}
-	
-	public Map<String,String> getQuoteParam(CarQuoteReq req){
-		
-		Map<String,String> params = new HashMap<String,String>();
-		//---车辆信息----
+		params.put("prpCitemCar.frameNo","LJ12GKS37A442670");//车架号
 		params.put("prpCitemCar.licenseFlag",String.valueOf(req.getLicenseFlag()));//是否已上牌照--牌照标志，1-已上牌，0-新车未上牌，默认为1
 		params.put("prpCitemCar.runAreaCode",req.getRunAreaCode());//行驶区域11
-		params.put("prpCitemCar.carInsuredRelation","1");//被保险人和车辆关系
-		params.put("prpCitemCar.clauseType","F42");//条款类型
-		params.put("prpCitemCar.energyType","0");//能源种类
-		params.put("prpCitemCar.isDropinVisitInsure","0");//是否上门投保
-		params.put("prpCitemCar.licenseColorCode","01");//号牌底色
-		params.put("prpCitemCar.licenseNo1","");//
-		params.put("prpCitemCar.loanVehicleFlag","0");//是否未还清贷款
-		params.put("prpCitemCar.modelCodeAlias","");//车型别名
-		params.put("prpCitemCar.monopolyCode","");//推荐送修维修点代码
-		params.put("prpCitemCar.monopolyFlag","0");//是否推荐送修
-		params.put("prpCitemCar.monopolyName","");//推荐送修名称
-		params.put("prpCitemCar.newCarFlag","1");//是否新车
-		params.put("prpCitemCar.runMiles","");//平均行驶里程(公里)
-		params.put("prpCitemCar.useYears","0");//实际使用年数
-		params.put("prpCitemCar.id.itemNo","1");
-		params.put("prpCitemCar.carLoanFlag","");
-		params.put("prpCitemCar.carId","");
-		params.put("prpCitemCar.versionNo","");
-		params.put("prpCmainCar.newDeviceFlag","");
-		params.put("prpCitemCar.otherNature","");
-		params.put("prpCitemCar.flag","");
-		params.put("prpCitemCar.discountType","");
-		params.put("prpCitemCar.colorCode","");
-		params.put("prpCitemCar.safeDevice","");
-		params.put("prpCitemCar.coefficient1","1");
-		params.put("prpCitemCar.coefficient2","1");
-		params.put("prpCitemCar.coefficient3","0.1");
-		params.put("prpCitemCar.startSiteName","");
-		params.put("prpCitemCar.endSiteName","");
-		params.put("prpCitemCar.noDamageYears","0");
-		params.put("prpCitemCar.modelDemandNo","");
-		params.put("prpCitemCar.cylinderCount","");
-	
-		params.put("carShipTaxPlatFormFlag","");
-		params.put("randomProposalNo","7931559731479707149089 ");
-		params.put("initemKind_Flag","1");
-		params.put("editType","NEW");
-		params.put("bizType","PROPOSAL");
-		params.put("ABflag","");
-		params.put("isBICI","11");
-		params.put("prpCmain.renewalFlag","");
-		params.put("activityFlag","0");
-		params.put("INTEGRAL_SWITCH","0");
-		params.put("GuangdongSysFlag","");
-		params.put("GDREALTIMECARFlag","");
-		params.put("GDREALTIMEMOTORFlag","");
-		params.put("GDCANCIINFOFlag","0");
-		params.put("prpCmain.checkFlag","");
-		params.put("prpCmain.othFlag","");
-		params.put("prpCmain.dmFlag","");
-		params.put("prpCmainCI.dmFlag","");
-		params.put("prpCmain.underWriteCode","");
-		params.put("prpCmain.underWriteName","");
-		params.put("prpCmain.underWriteEndDate","");
-		params.put("prpCmain.underWriteFlag","0");
-		params.put("prpCmainCI.checkFlag","");
-		params.put("prpCmainCI.underWriteFlag","");
-		params.put("bizNo","");
-		params.put("applyNo","");
-		params.put("oldPolicyNo","");
-		params.put("bizNoBZ","");
-		params.put("bizNoCI","");
-		params.put("prpPhead.endorDate","");
-		params.put("prpPhead.validDate","");
-		params.put("prpPhead.comCode","");
-		params.put("sumAmountBI","111800");
-		params.put("isTaxDemand","1");
-		params.put("cIInsureFlag","1");
-		params.put("bIInsureFlag","1");
-		params.put("ciInsureSwitchKindCode","D01");
-		params.put("ciInsureSwitchValues","0");
-		params.put("cIInsureMotorFlag","1");
-		params.put("mtPlatformTime","");
-		params.put("noPermissionsCarKindCode","");
-		params.put("isTaxFlag","");
-		params.put("rePolicyNo","");
-		params.put("oldPolicyType","");
-		params.put("ZGRS_PURCHASEPRICE","");
-		params.put("ZGRS_LOWESTPREMIUM","");
-		params.put("clauseFlag","");
-		params.put("prpCinsuredOwn_Flag","0");
-		params.put("prpCinsuredDiv_Flag","0");
-		params.put("prpCinsuredBon_Flag","0");
-		params.put("relationType","");
-		params.put("ciLimitDays","90");
-		params.put("udFlag","0");
-		params.put("kbFlag","0");
-		params.put("sbFlag","0");
-		params.put("xzFlag","0");
-		params.put("userType","01");
-		params.put("noNcheckFlag","0");
-		params.put("planFlag","0");
-		params.put("R_SWITCH","");
-		params.put("biStartDate","2016-11-22");
-		params.put("ciStartDate","2016-11-22");
-		params.put("ciStartHour","0");
-		params.put("ciEndDate","2017-11-21");
-		params.put("ciEndHour","24");
-		params.put("AGENTSWITCH","1");
-		params.put("JFCDSWITCH","19");
-		params.put("carShipTaxFlag","11");
-		params.put("commissionFlag","");
-		params.put("ICCardCHeck","0");
-		params.put("riskWarningFlag","1");
-		params.put("comCodePrefix","4403");
-		params.put("DAGMobilePhoneNum","");
-		params.put("scanSwitch","1000000000");
-		params.put("haveScanFlag","0");
-		params.put("diffDay","90");
-		params.put("cylinderFlag","1");
-		params.put("ciPlateVersion","6.0.0");
-		params.put("biPlateVersion","7.2.0");
-		params.put("criterionFlag","1");
-		params.put("isQuotatonFlag","1");
-		params.put("quotationRisk","DAA");
-		params.put("getReplenishfactor","0");
-		params.put("useYear","9");
-		params.put("FREEINSURANCEFLAG","011111");
-		params.put("isMotoDrunkDriv","1");
-		params.put("immediateFlag","1");
-		params.put("immediateFlagCI","1");
-		params.put("claimAmountReason","");
-		params.put("isQueryCarModelFlag","");
-		params.put("isDirectFee","0");
-		params.put("userCode","99355911");
-		params.put("comCode","44030700");
-		params.put("chgProfitFlag","");
-		params.put("ciPlatTask","1000000000");
-		params.put("biPlatTask","1000000000");
-		params.put("upperCostRateBI","100.00");
-		params.put("upperCostRateCI","");
-		params.put("rescueFundRate","");
-		params.put("resureFundFee","");
-		params.put("useCarshiptaxFlag","1");
-		params.put("taxFreeLicenseNo","");
-		params.put("isTaxFree","0");
-		params.put("premiumChangeFlag","1");
-		params.put("operationTimeStamp","2016-11-21 13:45:49");
-		params.put("VEHICLEPLAT","0");
-		params.put("MOTORFASTTRACK","");
-		params.put("motorFastTrack_flag","");
-		params.put("MOTORFASTTRACK_INSUREDCODE","");
-		params.put("currentDate","2016-11-21");
-		params.put("vinModifyFlag","");
-		params.put("addPolicyProjectCode","");
-		params.put("isAddPolicy","0");
-		params.put("commissionView","0");
-		params.put("specialflag","");
-		params.put("accountCheck","2");
-		params.put("projectBak","");
-		params.put("projectCodeBT","");
-		params.put("projectCodeBTback","");
-		params.put("checkTimeFlag","");
-		params.put("checkUndwrt","0");
-		params.put("carDamagedNum","");
-		params.put("insurePayTimes","0");
-		params.put("claimAdjustValue","0");
-		params.put("operatorProjectCode","1-917,2-917,4-917,5-917");
-		params.put("lossFlagKind","");
-		params.put("chooseFlagCI","1");
-		params.put("unitedSaleRelatioStr","");
-		params.put("purchasePriceU","");
-		params.put("countryNatureU","");
-		params.put("insurancefee_reform","1");
-		params.put("operateDateForFG","");
-		params.put("prpCmainCommon.clauseIssue","2");
-		params.put("prpCmainCommon.key1","");
-		params.put("amountFloat","30");
-		params.put("vat_switch","1");
-		params.put("pm_vehicle_switch","");
-		params.put("isNetFlagEad","");
-		params.put("isNetFlag","");
-		params.put("netCommission_SwitchEad","");
-		params.put("BiLastPolicyFlag","0");
-		params.put("CiLastPolicyFlag","");
-		params.put("CiLastEffectiveDate","");
-		params.put("CiLastExpireDate","");
-		params.put("benchMarkPremium","");
-		params.put("BiLastEffectiveDate","");
-		params.put("BiLastExpireDate","");
-		params.put("lastTotalPremium","");
-		params.put("purchasePriceUFlag","");
-		params.put("startDateU","");
-		params.put("endDateU","");
-		params.put("biCiFlagU","");
-		params.put("biCiFlagIsChange","");
-		params.put("biCiDateIsChange","");
-		params.put("switchFlag","0");
-		params.put("relatedFlag","0");
-		params.put("riskCode","DAA");
-		params.put("prpCmain.riskCode","");
-		params.put("riskName","");
-		params.put("prpCproposalVo.checkFlag","");
-		params.put("prpCproposalVo.underWriteFlag","");
-		params.put("prpCproposalVo.strStartDate","");
-		params.put("prpCproposalVo.othFlag","");
-		params.put("prpCproposalVo.checkUpCode","");
-		params.put("prpCproposalVo.operatorCode1","");
-		params.put("prpCproposalVo.businessNature","");
-		params.put("agentCodeValidType","");
-		params.put("agentCodeValidValue","");
-		params.put("agentCodeValidIPPer","");
-		params.put("qualificationNo","");
-		params.put("qualificationName","");
-		params.put("OLD_STARTDATE_CI","");
-		params.put("OLD_ENDDATE_CI","");
-		params.put("prpCmainCommon.greyList","");
-		params.put("prpCmainCommon.image","");
-		params.put("reinComPany","");
-		params.put("reinPolicyNo","");
-		params.put("reinStartDate","");
-		params.put("reinEndDate","");
-		params.put("prpCmain.proposalNo","");
-		params.put("prpCmain.policyNo","");
-		params.put("prpCmainCI.proposalNo","");
-		params.put("prpCmainCI.policyNo","");
-		params.put("prpPhead.applyNo","");
-		params.put("prpPhead.endorseNo","");
-		params.put("prpPheadCI.applyNo","");
-		params.put("prpPheadCI.endorseNo","");
-		params.put("prpCmain.comCode","44030716");
-		params.put("comCodeDes","深圳市分公司梅林支公司中介业务一部");
-		params.put("prpCmain.handler1Code","11095373");
-		params.put("handler1CodeDes","王淑锦");
-		params.put("homePhone","13632504158");
-		params.put("officePhone","13632504158");
-		params.put("moblie","13632504158");
-		params.put("checkHandler1Code","1");
-		params.put("handler1CodeDesFlag","B");
-		params.put("handler1Info","11095373_FIELD_SEPARATOR_王淑锦_FIELD_SEPARATOR_13632504158_FIELD_SEPARATOR_13632504158_FIELD_SEPARATOR_13632504158_FIELD_SEPARATOR_B_FIELD_SEPARATOR_1299010736");
-		params.put("prpCmainCommon.handler1code_uni","1299010736");
-		params.put("prpCmain.handlerCode","11095373");
-		params.put("handlerCodeDes","王淑锦");
-		params.put("homePhonebak","");
-		params.put("officePhonebak","");
-		params.put("mobliebak","");
-		params.put("handler1CodeDesFlagbak","");
-		params.put("prpCmainCommon.handlercode_uni","1299010736");
-		params.put("handlerInfo","11095373_FIELD_SEPARATOR_王淑锦_FIELD_SEPARATOR__FIELD_SEPARATOR__FIELD_SEPARATOR__FIELD_SEPARATOR__FIELD_SEPARATOR_1299010736");
-		params.put("prpCmain.businessNature","2");
-		params.put("businessNatureTranslation","专业代理业务");
-		params.put("prpCmain.agentCode","440321100061");
-		params.put("prpCmainagentName","深圳市宜保通保险销售有限公司");
-		params.put("agentType","2110OY");
-		params.put("agentCode","440321100061");
-		params.put("tempAgentCode","2110OY");
-		params.put("sumPremiumChgFlag","1");
-		params.put("prpCmain.sumPremium1","2364.01");
-		params.put("sumPayTax1","0.00");
-		params.put("prpCmain.contractNo","");
-		params.put("prpCmain.operateDate","2016-11-21");
-		params.put("Today","2016-11-21");
-		params.put("OperateDate","2016-12-21");
-		params.put("prpCmain.makeCom","44030716");
-		params.put("makeComDes","深圳市分公司梅林支公司中介业务一部");
-		params.put("prpCmain.startDate","2016-11-22");
-		params.put("prpCmain.startHour","0");
-		params.put("prpCmain.endDate","2017-11-21");
-		params.put("prpCmain.endHour","24");
-		params.put("prpCmain.checkUpCode","");
-		params.put("prpCmainCI.startDate","2016-11-22");
-		params.put("prpCmainCI.startHour","0");
-		params.put("prpCmainCI.endDate","2017-11-21");
-		params.put("prpCmainCI.endHour","24");
-		params.put("carPremium","0.0");
-		params.put("insuredChangeFlag","0");
-		params.put("refreshEadFlag","1");
-		params.put("imageAdjustPixels","20");
-		params.put("prpBatchVehicle.id.contractNo","");
-		params.put("prpBatchVehicle.id.serialNo","");
-		params.put("prpBatchVehicle.motorCadeNo","");
-		params.put("prpBatchVehicle.licenseNo","");
-		params.put("prpBatchVehicle.licenseType","");
-		params.put("prpBatchVehicle.carKindCode","");
-		params.put("prpBatchVehicle.proposalNo","");
-		params.put("prpBatchVehicle.policyNo","");
-		params.put("prpBatchVehicle.sumAmount","");
-		params.put("prpBatchVehicle.sumPremium","");
-		params.put("prpBatchVehicle.prpProjectCode","");
-		params.put("prpBatchVehicle.coinsProjectCode","");
-		params.put("prpBatchVehicle.profitProjectCode","");
-		params.put("prpBatchVehicle.facProjectCode","");
-		params.put("prpBatchVehicle.flag","");
-		params.put("prpBatchVehicle.carId","");
-		params.put("prpBatchVehicle.versionNo","");
-		params.put("prpBatchMain.discountmode","");
-		params.put("minusFlag","");
-		params.put("paramIndex","");
-		params.put("batchCIFlag","");
-		params.put("batchBIFlag","");
-		params.put("pageEndorRecorder.endorFlags","");
-		params.put("endorDateEdit","");
-		params.put("validDateEdit","");
-		params.put("endDateEdit","");
-		params.put("endorType","");
-		params.put("prpPhead.endorType","");
-		params.put("generatePtextFlag","0");
-		params.put("generatePtextAgainFlag","0");
-		params.put("quotationNo","");
-		params.put("quotationFlag","");
-		params.put("customerCode","");
-		params.put("customerFlag","");
-		params.put("compensateNo","");
-		params.put("dilutiveType","");
-		params.put("prpCfixationTemp.discount","95");
-		params.put("prpCfixationTemp.id.riskCode","DAA");
-		params.put("prpCfixationTemp.profits","5");
-		params.put("prpCfixationTemp.cost","4.31");
-		params.put("prpCfixationTemp.taxorAppend","5.6");
-		params.put("prpCfixationTemp.payMentR","38");
-		params.put("prpCfixationTemp.basePayMentR","30.44");
-		params.put("prpCfixationTemp.poundAge","16.69");
-		params.put("prpCfixationTemp.basePremium","100");
-		params.put("prpCfixationTemp.riskPremium","100");
-		params.put("prpCfixationTemp.riskSumPremium","0");
-		params.put("prpCfixationTemp.signPremium","100");
-		params.put("prpCfixationTemp.isQuotation","");
-		params.put("prpCfixationTemp.riskClass","A");
-		params.put("prpCfixationTemp.operationInfo","1");
-		params.put("prpCfixationTemp.realDisCount","95");
-		params.put("prpCfixationTemp.realProfits","58.05");
-		params.put("prpCfixationTemp.realPayMentR","32.04");
-		params.put("prpCfixationTemp.remark","");
-		params.put("prpCfixationTemp.responseCode","");
-		params.put("prpCfixationTemp.errorMessage","");
-		params.put("prpCfixationTemp.profitClass","A");
-		params.put("prpCfixationTemp.costRate","35");
-		params.put("prpCfixationCITemp.discount","");
-		params.put("prpCfixationCITemp.id.riskCode","");
-		params.put("prpCfixationCITemp.profits","");
-		params.put("prpCfixationCITemp.cost","");
-		params.put("prpCfixationCITemp.taxorAppend","");
-		params.put("prpCfixationCITemp.payMentR","");
-		params.put("prpCfixationCITemp.basePayMentR","");
-		params.put("prpCfixationCITemp.poundAge","");
-		params.put("prpCfixationCITemp.basePremium","");
-		params.put("prpCfixationCITemp.riskPremium","");
-		params.put("prpCfixationCITemp.riskSumPremium","");
-		params.put("prpCfixationCITemp.signPremium","");
-		params.put("prpCfixationCITemp.isQuotation","");
-		params.put("prpCfixationCITemp.riskClass","");
-		params.put("prpCfixationCITemp.operationInfo","");
-		params.put("prpCfixationCITemp.realDisCount","");
-		params.put("prpCfixationCITemp.realProfits","");
-		params.put("prpCfixationCITemp.realPayMentR","");
-		params.put("prpCfixationCITemp.remark","");
-		params.put("prpCfixationCITemp.responseCode","");
-		params.put("prpCfixationCITemp.errorMessage","");
-		params.put("prpCfixationCITemp.profitClass","");
-		params.put("prpCfixationCITemp.costRate","");
-		params.put("prpCsalesFixes_[0].id.proposalNo","");
-		params.put("prpCsalesFixes_[0].id.serialNo","");
-		params.put("prpCsalesFixes_[0].comCode","");
-		params.put("prpCsalesFixes_[0].businessNature","");
-		params.put("prpCsalesFixes_[0].riskCode","");
-		params.put("prpCsalesFixes_[0].version","");
-		params.put("prpCsalesFixes_[0].isForMal","");
-		params.put("IS_LOAN_MODIFY","00");
-		params.put("isCarinfoPlat","00");
-		params.put("kindAndAmount","");
-		params.put("isSpecialFlag","");
-		params.put("specialEngage","");
-		params.put("licenseNoCar","");
-		
-		params.put("carModelPlatFlag","0");
-		params.put("updateQuotation","");
-		
-		params.put("pmCarOwner","");
-		
-		params.put("oldClauseType","F42");
-		
-		params.put("newCarFlagValue","2");
-		
-		params.put("codeLicenseType","LicenseType01,04,LicenseType02,01,LicenseType03,02,LicenseType04,02,LicenseType05,02,LicenseType06,02,LicenseType07,04,LicenseType08,04,LicenseType09,01,LicenseType10,01,LicenseType11,01,LicenseType12,01,LicenseType13,04,LicenseType14,04,LicenseType15,04,LicenseType16,04,LicenseType17,04,LicenseType18,01,LicenseType19,01,LicenseType20,01,LicenseType21,01,LicenseType22,01,LicenseType23,03,LicenseType24,01,LicenseType25,01,LicenseType31,03,LicenseType32,03,LicenseType90,02");
-		
-		params.put("LicenseTypeDes","小型汽车号牌");
-		
-		params.put("LicenseColorCodeDes","蓝");
-		
-		params.put("CarKindCodeDes","客车");
-		params.put("carKindCodeBak","A01");
-		
-		params.put("useNatureCodeBak","211");
-		params.put("useNatureCodeTrue","211");
-		
-		params.put("clauseTypeBak","F42");
-		
-		params.put("tbSelYear1","2016");
-		params.put("tbSelMonth1","11");
-		params.put("enrollDateTrue","");
-		
-		params.put("taxAbateForPlat","");
-		params.put("taxAbateForPlatCarModel","");
-		
-		
-		params.put("owner","");
-		
-		params.put("prpCitemCarExt.lastDamagedBI","0");
-		
-		params.put("modelCodes","");
-		params.put("PurchasePriceScal","10");
-		
-		params.put("CarActualValueTrue","111800");
-		params.put("CarActualValueTrue1","");
-		params.put("SZpurchasePriceUp","1#10;2~8#10;8#10");
-		params.put("SZpurchasePriceDown","0~0#-5;1~7#-10;7~100#-25");
-		params.put("purchasePriceF48","200000");
-		params.put("purchasePriceUp","-5");
-		params.put("purchasePriceDown","10");
-		params.put("purchasePriceOld","111800");
-		
-		params.put("seatCountTrue","");
-		
-		params.put("isQuotation","1");
-		params.put("prpCmainCommon.queryArea","440000");
-		params.put("queryArea","广东省");
-		params.put("vehiclePricer","111800");
-		
-		params.put("prpCmainChannel.assetAgentName","");
-		params.put("prpCmainChannel.assetAgentCode","");
-		params.put("prpCmainChannel.assetAgentPhone","");
-		params.put("SYFlag","0");
-		params.put("MTFlag","0");
-		params.put("BMFlag","0");
-		params.put("STFlag","0");
-		params.put("prpCcarDevices_[0].deviceName","");
-		params.put("prpCcarDevices_[0].id.itemNo","1");
-		params.put("prpCcarDevices_[0].id.proposalNo","");
-		params.put("prpCcarDevices_[0].id.serialNo","");
-		params.put("prpCcarDevices_[0].flag","");
-		params.put("prpCcarDevices_[0].quantity","");
-		params.put("prpCcarDevices_[0].purchasePrice","");
-		params.put("prpCcarDevices_[0].buyDate","");
-		params.put("prpCcarDevices_[0].actualValue","");
-		params.put("hidden_index_citemcar","0");
-		params.put("editFlag","1");
-		params.put("prpCmainCommon.ext2","");
-		params.put("configedRepeatTimesLocal","1");
-		
-		params.put("prpCinsureds_[0].id.serialNo","1");
-		params.put("prpCinsureds_[0].insuredType","1");
-		params.put("prpCinsureds_[0].insuredNature","1");
-		params.put("prpCinsureds_[0].insuredCode","4403106001747475");
-		params.put("prpCinsureds_[0].unitType","");
-		params.put("prpCinsureds_[0].drivingYears","");
-		params.put("prpCinsureds_[0].versionNo","1");
-		params.put("prpCinsureds_[0].auditStatus","2");
-		params.put("prpCinsureds_[0].countryCode","CHN");
-		params.put("prpCinsureds_[0].flag","");
-		params.put("prpCinsureds_[0].drivingLicenseNo","430224196402131230");
-		params.put("prpCinsureds_[0].drivingCarType","");
-		params.put("prpCinsureds_[0].appendPrintName","");
-		params.put("prpCinsureds_[0].causetroubleTimes","");
-		params.put("prpCinsureds_[0].acceptLicenseDate","");
-		params.put("isCheckRepeat_[0]","");
-		params.put("configedRepeatTimes_[0]","");
-		params.put("repeatTimes_[0]","");
-		params.put("prpCinsureds_[0].unifiedSocialCreditCode","");
-		params.put("prpCinsureds_[0].soldierRelations","");
-		params.put("prpCinsureds_[0].soldierIdentifyType","");
-		params.put("prpCinsureds_[0].soldierIdentifyNumber","");
-		params.put("imobile","137****0264");
-		params.put("iauditStatus","2");
-		params.put("iversionNo","1");
-		params.put("hidden_index_insured","0");
-		params.put("prpCinsureds[0].id.serialNo","1");
-		params.put("prpCinsureds[0].insuredType","1");
-		params.put("prpCinsureds[0].insuredNature","1");
-		params.put("prpCinsureds[0].insuredCode","4403106001747475");
-		params.put("prpCinsureds[0].unitType","");
-		params.put("prpCinsureds[0].drivingYears","");
-		params.put("prpCinsureds[0].versionNo","1");
-		params.put("prpCinsureds[0].auditStatus","2");
-		params.put("prpCinsureds[0].countryCode","CHN");
-		params.put("prpCinsureds[0].flag","");
-		params.put("prpCinsureds[0].drivingLicenseNo","430224196402131230");
-		params.put("prpCinsureds[0].drivingCarType","");
-		params.put("prpCinsureds[0].appendPrintName","");
-		params.put("prpCinsureds[0].causetroubleTimes","");
-		params.put("prpCinsureds[0].acceptLicenseDate","");
-		params.put("isCheckRepeat[0]","");
-		params.put("configedRepeatTimes[0]","");
-		params.put("repeatTimes[0]","");
-		params.put("prpCinsureds[0].unifiedSocialCreditCode","");
-		params.put("prpCinsureds[0].soldierRelations","");
-		params.put("prpCinsureds[0].soldierIdentifyType","");
-		params.put("prpCinsureds[0].soldierIdentifyNumber","");
-		params.put("imobile","137****0264");
-		params.put("iauditStatus","2");
-		params.put("iversionNo","1");
-		params.put("_insuredFlag_hide","投保人");
-		params.put("_insuredFlag_hide","被保险人");
-		params.put("_insuredFlag_hide","车主");
-		params.put("_insuredFlag_hide","指定驾驶人");
-		params.put("_insuredFlag_hide","受益人");
-		params.put("_insuredFlag_hide","港澳车车主");
-		params.put("_insuredFlag_hide","联系人");
-		params.put("_insuredFlag","0");
-		params.put("_insuredFlag_hide","委托人");
-		params.put("_resident","");
-		params.put("_insuredType","1");
-		params.put("_insuredCode","");
-		params.put("_insuredName","");
-		params.put("customerURL","http://10.134.130.208:8300/cif");
-		params.put("_isCheckRepeat","");
-		params.put("_configedRepeatTimes","");
-		params.put("_repeatTimes","");
-		params.put("_identifyType","01");
-		params.put("_identifyNumber","");
-		params.put("_unifiedSocialCreditCode","");
-		params.put("_mobile","");
-		params.put("_mobile1","");
-		params.put("_sex","1");
-		params.put("_age","");
-		params.put("_drivingYears","");
-		params.put("_countryCode","CHN");
-		params.put("_insuredAddress","");
-		params.put("_postCode","");
-		params.put("_appendPrintName","");
-		params.put("group_code","");
-		params.put("_auditStatus","");
-		params.put("_auditStatusDes","");
-		params.put("_versionNo","");
-		params.put("_drivingLicenseNo","");
-		params.put("_soldierRelations","0");
-		params.put("_soldierIdentifyType","000");
-		params.put("_soldierIdentifyNumber","");
-		params.put("_drivingCarType","");
-		params.put("CarKindLicense","");
-		params.put("_causetroubleTimes","");
-		params.put("_acceptLicenseDate","");
-		params.put("prpCmainCar.agreeDriverFlag","");
-		params.put("updateIndex","-1");
-		params.put("prpBatchProposal.profitType","");
-		params.put("motorFastTrack_Amount","");
-		params.put("insurancefee_reform","1");
-		params.put("prpCmainCommon.clauseIssue","2");
-		params.put("prpCprofitDetailsTemp_[0].chooseFlag","on");
-		params.put("prpCprofitDetailsTemp_[0].profitName","自主核保优惠系数");
-		params.put("prpCprofitDetailsTemp_[0].condition","自主核保优惠系数");
-		params.put("profitRateTemp_[0]","1.05555556");
-		params.put("prpCprofitDetailsTemp_[0].profitRate","105.555556");
-		params.put("prpCprofitDetailsTemp_[0].profitRateMin","75");
-		params.put("prpCprofitDetailsTemp_[0].profitRateMax","125");
-		params.put("prpCprofitDetailsTemp_[0].id.proposalNo","");
-		params.put("prpCprofitDetailsTemp_[0].id.itemKindNo","2");
-		params.put("prpCprofitDetailsTemp_[0].id.profitCode","C03");
-		params.put("prpCprofitDetailsTemp_[0].id.serialNo","0");
-		params.put("prpCprofitDetailsTemp_[0].id.profitType","1");
-		params.put("prpCprofitDetailsTemp_[0].kindCode","050930");
-		params.put("prpCprofitDetailsTemp_[0].conditionCode","C03  ");
-		params.put("prpCprofitDetailsTemp_[0].flag","");
-		params.put("prpCprofitFactorsTemp_[0].chooseFlag","on");
-		params.put("serialNo_[0]","3");
-		params.put("prpCprofitFactorsTemp_[0].profitName","自主核保优惠系数");
-		params.put("prpCprofitFactorsTemp_[0].condition","自主核保优惠系数");
-		params.put("rateTemp_[0]","1.05555556");
-		params.put("prpCprofitFactorsTemp_[0].rate","105.555556");
-		params.put("prpCprofitFactorsTemp_[0].lowerRate","75");
-		params.put("prpCprofitFactorsTemp_[0].upperRate","125");
-		params.put("prpCprofitFactorsTemp_[0].id.profitCode","C03");
-		params.put("prpCprofitFactorsTemp_[0].id.conditionCode","C03");
-		params.put("prpCprofitFactorsTemp_[0].flag","");
-		params.put("prpCprofitFactorFixesTemp_[0].id.profitCode","");
-		params.put("prpCprofitFactorFixesTemp_[0].id.conditionCode","");
-		params.put("prpCprofitFactorFixesTemp_[0].id.profitCodeForFather","");
-		params.put("prpCprofitFactorFixesTemp_[0].id.conditionCodeForFather","");
-		params.put("prpCprofitFactorFixesTemp_[0].profitName","");
-		params.put("prpCprofitFactorFixesTemp_[0].condition","");
-		params.put("prpCprofitFactorFixesTemp_[0].upperRate","");
-		params.put("prpCprofitFactorFixesTemp_[0].lowerRate","");
-		params.put("prpCprofitFactorFixesTemp_[0].rate","");
-		params.put("prpCprofitFactorFixesTemp_[0].chooseFlag","");
-		params.put("prpCprofitFactorFixesTemp_[0].flag","");
-		params.put("prpCitemKind.shortRateFlag","2");
-		params.put("prpCitemKind.shortRate","100");
-		params.put("prpCitemKind.currency","CNY");
-		params.put("prpCmainCommon.groupFlag","0");
-		params.put("prpCmain.preDiscount","");
-		params.put("sumBenchPremium","2488.43");
-		params.put("prpCmain.discount","0.95000060");
-		params.put("prpCmain.sumPremium","2364.01");
-		params.put("premiumF48","5000");
-		params.put("prpCmain.sumNetPremium","2230.20");
-		params.put("prpCmain.sumTaxPremium","133.81");
-		params.put("passengersSwitchFlag","");
-		params.put("prpCitemKindsTemp[0].min","");
-		params.put("prpCitemKindsTemp[0].max","");
-		params.put("prpCitemKindsTemp[0].chooseFlag","on");
-		params.put("prpCitemKindsTemp[0].itemKindNo","");
-		params.put("prpCitemKindsTemp[0].clauseCode","050051");
-		//params.put("prpCitemKindsTemp[0].kindCode","050202");
-		//params.put("prpCitemKindsTemp[0].kindName","机动车损失保险");
-		params.put("prpCitemKindsTemp[0].deductible","0.00");
-		params.put("prpCitemKindsTemp[0].deductibleRate","0");
-		params.put("prpCitemKindsTemp[0].pureRiskPremium","1406.504060");
-		params.put("prpCitemKindsTemp[0].specialFlag","on");
-		//params.put("prpCitemKindsTemp[0].amount","111800.00");
-		params.put("prpCitemKindsTemp[0].calculateFlag","Y11Y000");
-		params.put("prpCitemKindsTemp[0].startDate","");
-		params.put("prpCitemKindsTemp[0].startHour","");
-		params.put("prpCitemKindsTemp[0].endDate","");
-		params.put("prpCitemKindsTemp[0].endHour","");
-		//params.put("relateSpecial[0]","050930");
-		params.put("prpCitemKindsTemp[0].flag"," 100000");
-		params.put("prpCitemKindsTemp[0].basePremium","0");
-		params.put("prpCitemKindsTemp[0].riskPremium","0");
-		params.put("prpCitemKindsTemp[0].rate","");
-		//params.put("prpCitemKindsTemp[0].benchMarkPremium","2163.85");
-		//params.put("prpCitemKindsTemp[0].disCount","0.95000000");
-		params.put("prpCprofitDetailsTemp[6].chooseFlag","on");
-		params.put("prpCprofitDetailsTemp[6].profitName","无赔款优待及上年赔款记录");
-		params.put("prpCprofitDetailsTemp[6].condition","新保或上年发生1次赔款");
-		params.put("profitRateTemp[6]","1.00000000");
-		params.put("prpCprofitDetailsTemp[6].profitRate","100");
-		params.put("prpCprofitDetailsTemp[6].profitRateMin","100");
-		params.put("prpCprofitDetailsTemp[6].profitRateMax","130");
-		params.put("prpCprofitDetailsTemp[6].id.proposalNo","");
-		params.put("prpCprofitDetailsTemp[6].id.itemKindNo","1");
-		params.put("prpCprofitDetailsTemp[6].id.profitCode","C01");
-		params.put("prpCprofitDetailsTemp[6].id.serialNo","0");
-		params.put("prpCprofitDetailsTemp[6].id.profitType","1");
-		params.put("prpCprofitDetailsTemp[6].kindCode","050202");
-		params.put("prpCprofitDetailsTemp[6].conditionCode","C0104");
-		params.put("prpCprofitDetailsTemp[6].flag","");
-		params.put("prpCprofitDetailsTemp[7].chooseFlag","on");
-		params.put("prpCprofitDetailsTemp[7].profitName","自主渠道系数");
-		params.put("prpCprofitDetailsTemp[7].condition","经纪及代理渠道业务优惠系数");
-		params.put("profitRateTemp[7]","0.90000000");
-		params.put("prpCprofitDetailsTemp[7].profitRate","90");
-		params.put("prpCprofitDetailsTemp[7].profitRateMin","75");
-		params.put("prpCprofitDetailsTemp[7].profitRateMax","125");
-		params.put("prpCprofitDetailsTemp[7].id.proposalNo","");
-		params.put("prpCprofitDetailsTemp[7].id.itemKindNo","1");
-		params.put("prpCprofitDetailsTemp[7].id.profitCode","C02");
-		params.put("prpCprofitDetailsTemp[7].id.serialNo","0");
-		params.put("prpCprofitDetailsTemp[7].id.profitType","1");
-		params.put("prpCprofitDetailsTemp[7].kindCode","050202");
-		params.put("prpCprofitDetailsTemp[7].conditionCode","C0206");
-		params.put("prpCprofitDetailsTemp[7].flag","");
-		params.put("prpCprofitDetailsTemp[8].chooseFlag","on");
-		params.put("prpCprofitDetailsTemp[8].profitName","自主核保优惠系数");
-		params.put("prpCprofitDetailsTemp[8].condition","自主核保优惠系数");
-		params.put("profitRateTemp[8]","1.05555556");
-		params.put("prpCprofitDetailsTemp[8].profitRate","105.555556");
-		params.put("prpCprofitDetailsTemp[8].profitRateMin","75");
-		params.put("prpCprofitDetailsTemp[8].profitRateMax","125");
-		params.put("prpCprofitDetailsTemp[8].id.proposalNo","");
-		params.put("prpCprofitDetailsTemp[8].id.itemKindNo","1");
-		params.put("prpCprofitDetailsTemp[8].id.profitCode","C03");
-		params.put("prpCprofitDetailsTemp[8].id.serialNo","0");
-		params.put("prpCprofitDetailsTemp[8].id.profitType","1");
-		params.put("prpCprofitDetailsTemp[8].kindCode","050202");
-		params.put("prpCprofitDetailsTemp[8].conditionCode","C03  ");
-		params.put("prpCprofitDetailsTemp[8].flag","");
-		//params.put("prpCitemKindsTemp[0].premium","2055.66");
-		params.put("prpCitemKindsTemp[0].netPremium","1939.30");
-		params.put("prpCitemKindsTemp[0].taxPremium","116.36");
-		params.put("prpCitemKindsTemp[0].taxRate","6.00");
-		params.put("prpCitemKindsTemp[0].dutyFlag","2");
-		params.put("prpCitemKindsTemp[1].min","");
-		params.put("prpCitemKindsTemp[1].max","");
-		params.put("prpCitemKindsTemp[1].itemKindNo","");
-		params.put("prpCitemKindsTemp[1].clauseCode","050054");
-		params.put("prpCitemKindsTemp[1].kindCode","050501");
-		params.put("prpCitemKindsTemp[1].kindName","盗抢险");
-		params.put("prpCitemKindsTemp[1].unitAmount","");
-		params.put("prpCitemKindsTemp[1].quantity","");
-		params.put("prpCitemKindsTemp[1].amount","");
-		params.put("prpCitemKindsTemp[1].calculateFlag","N11Y000");
-		params.put("prpCitemKindsTemp[1].startDate","");
-		params.put("prpCitemKindsTemp[1].startHour","");
-		params.put("prpCitemKindsTemp[1].endDate","");
-		params.put("prpCitemKindsTemp[1].endHour","");
-		params.put("relateSpecial[1]","050932");
-		params.put("prpCitemKindsTemp[1].flag"," 100000");
-		params.put("prpCitemKindsTemp[1].basePremium","");
-		params.put("prpCitemKindsTemp[1].riskPremium","");
-		params.put("prpCitemKindsTemp[1].rate","");
-		params.put("prpCitemKindsTemp[1].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[1].disCount","");
-		params.put("prpCitemKindsTemp[1].premium","");
-		params.put("prpCitemKindsTemp[1].netPremium","");
-		params.put("prpCitemKindsTemp[1].taxPremium","");
-		params.put("prpCitemKindsTemp[1].taxRate","");
-		params.put("prpCitemKindsTemp[1].dutyFlag","");
-		params.put("prpCitemKindsTemp[2].min","");
-		params.put("prpCitemKindsTemp[2].max","");
-		params.put("prpCitemKindsTemp[2].itemKindNo","");
-		params.put("prpCitemKindsTemp[2].clauseCode","050052");
-		params.put("prpCitemKindsTemp[2].kindCode","050602");
-		params.put("prpCitemKindsTemp[2].kindName","第三者责任保险");
-		params.put("prpCitemKindsTemp[2].unitAmount","");
-		params.put("prpCitemKindsTemp[2].quantity","");
-		params.put("prpCitemKindsTemp[2].amount","");
-		params.put("prpCitemKindsTemp[2].calculateFlag","Y21Y000");
-		params.put("prpCitemKindsTemp[2].startDate","");
-		params.put("prpCitemKindsTemp[2].startHour","");
-		params.put("prpCitemKindsTemp[2].endDate","");
-		params.put("prpCitemKindsTemp[2].endHour","");
-		params.put("relateSpecial[2]","050931");
-		params.put("prpCitemKindsTemp[2].flag"," 100000");
-		params.put("prpCitemKindsTemp[2].basePremium","");
-		params.put("prpCitemKindsTemp[2].riskPremium","");
-		params.put("prpCitemKindsTemp[2].rate","");
-		params.put("prpCitemKindsTemp[2].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[2].disCount","");
-		params.put("prpCitemKindsTemp[2].premium","");
-		params.put("prpCitemKindsTemp[2].netPremium","");
-		params.put("prpCitemKindsTemp[2].taxPremium","");
-		params.put("prpCitemKindsTemp[2].taxRate","");
-		params.put("prpCitemKindsTemp[2].dutyFlag","");
-		params.put("prpCitemKindsTemp[3].min","");
-		params.put("prpCitemKindsTemp[3].max","");
-		params.put("prpCitemKindsTemp[3].itemKindNo","");
-		params.put("prpCitemKindsTemp[3].clauseCode","050053");
-		params.put("prpCitemKindsTemp[3].kindCode","050711");
-		params.put("prpCitemKindsTemp[3].kindName","车上人员责任险（司机）");
-		params.put("prpCitemKindsTemp[3].unitAmount","");
-		params.put("prpCitemKindsTemp[3].quantity","");
-		params.put("prpCitemKindsTemp[3].amount","");
-		params.put("prpCitemKindsTemp[3].calculateFlag","Y21Y00");
-		params.put("prpCitemKindsTemp[3].startDate","");
-		params.put("prpCitemKindsTemp[3].startHour","");
-		params.put("prpCitemKindsTemp[3].endDate","");
-		params.put("prpCitemKindsTemp[3].endHour","");
-		params.put("relateSpecial[3]","050933");
-		params.put("prpCitemKindsTemp[3].flag"," 100000");
-		params.put("prpCitemKindsTemp[3].basePremium","");
-		params.put("prpCitemKindsTemp[3].riskPremium","");
-		params.put("prpCitemKindsTemp[3].rate","");
-		params.put("prpCitemKindsTemp[3].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[3].disCount","");
-		params.put("prpCitemKindsTemp[3].premium","");
-		params.put("prpCitemKindsTemp[3].netPremium","");
-		params.put("prpCitemKindsTemp[3].taxPremium","");
-		params.put("prpCitemKindsTemp[3].taxRate","");
-		params.put("prpCitemKindsTemp[3].dutyFlag","");
-		params.put("prpCitemKindsTemp[4].min","");
-		params.put("prpCitemKindsTemp[4].max","");
-		params.put("prpCitemKindsTemp[4].itemKindNo","");
-		params.put("prpCitemKindsTemp[4].clauseCode","050053");
-		params.put("prpCitemKindsTemp[4].kindCode","050712");
-		params.put("prpCitemKindsTemp[4].kindName","车上人员责任险（乘客）");
-		params.put("prpCitemKindsTemp[4].unitAmount","");
-		params.put("prpCitemKindsTemp[4].quantity","");
-		params.put("prpCitemKindsTemp[4].amount","");
-		params.put("prpCitemKindsTemp[4].calculateFlag","Y21Y00");
-		params.put("prpCitemKindsTemp[4].startDate","");
-		params.put("prpCitemKindsTemp[4].startHour","");
-		params.put("prpCitemKindsTemp[4].endDate","");
-		params.put("prpCitemKindsTemp[4].endHour","");
-		params.put("relateSpecial[4]","050934");
-		params.put("prpCitemKindsTemp[4].flag"," 100000");
-		params.put("prpCitemKindsTemp[4].basePremium","");
-		params.put("prpCitemKindsTemp[4].riskPremium","");
-		params.put("prpCitemKindsTemp[4].rate","");
-		params.put("prpCitemKindsTemp[4].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[4].disCount","");
-		params.put("prpCitemKindsTemp[4].premium","");
-		params.put("prpCitemKindsTemp[4].netPremium","");
-		params.put("prpCitemKindsTemp[4].taxPremium","");
-		params.put("prpCitemKindsTemp[4].taxRate","");
-		params.put("prpCitemKindsTemp[4].dutyFlag","");
-		params.put("prpCitemKindsTemp[5].min","");
-		params.put("prpCitemKindsTemp[5].max","");
-		params.put("prpCitemKindsTemp[5].itemKindNo","");
-		params.put("kindcodesub","");
-		params.put("prpCitemKindsTemp[5].clauseCode","050059");
-		params.put("prpCitemKindsTemp[5].kindCode","050211");
-		params.put("relateSpecial[5]","050937");
-		params.put("prpCitemKindsTemp[5].kindName","车身划痕损失险");
-		params.put("prpCitemKindsTemp[5].amount","2000.00");
-		params.put("prpCitemKindsTemp[5].calculateFlag","N12Y000");
-		params.put("prpCitemKindsTemp[5].startDate","");
-		params.put("prpCitemKindsTemp[5].startHour","");
-		params.put("prpCitemKindsTemp[5].endDate","");
-		params.put("prpCitemKindsTemp[5].endHour","");
-		params.put("prpCitemKindsTemp[5].flag"," 200000");
-		params.put("prpCitemKindsTemp[5].basePremium","");
-		params.put("prpCitemKindsTemp[5].riskPremium","");
-		params.put("prpCitemKindsTemp[5].rate","");
-		params.put("prpCitemKindsTemp[5].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[5].disCount","");
-		params.put("prpCitemKindsTemp[5].premium","");
-		params.put("prpCitemKindsTemp[5].netPremium","");
-		params.put("prpCitemKindsTemp[5].taxPremium","");
-		params.put("prpCitemKindsTemp[5].taxRate","");
-		params.put("prpCitemKindsTemp[5].dutyFlag","");
-		params.put("prpCitemKindsTemp[6].min","");
-		params.put("prpCitemKindsTemp[6].max","");
-		params.put("prpCitemKindsTemp[6].itemKindNo","");
-		params.put("kindcodesub","");
-		params.put("prpCitemKindsTemp[6].clauseCode","050056");
-		params.put("prpCitemKindsTemp[6].kindCode","050232");
-		params.put("relateSpecial[6]","      ");
-		params.put("prpCitemKindsTemp[6].kindName","玻璃单独破碎险");
-		params.put("prpCitemKindsTemp[6].modeCode","10");
-		params.put("prpCitemKindsTemp[6].amount","");
-		params.put("prpCitemKindsTemp[6].calculateFlag","N32N000");
-		params.put("prpCitemKindsTemp[6].startDate","");
-		params.put("prpCitemKindsTemp[6].startHour","");
-		params.put("prpCitemKindsTemp[6].endDate","");
-		params.put("prpCitemKindsTemp[6].endHour","");
-		params.put("prpCitemKindsTemp[6].flag"," 200000");
-		params.put("prpCitemKindsTemp[6].basePremium","");
-		params.put("prpCitemKindsTemp[6].riskPremium","");
-		params.put("prpCitemKindsTemp[6].rate","");
-		params.put("prpCitemKindsTemp[6].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[6].disCount","");
-		params.put("prpCitemKindsTemp[6].premium","");
-		params.put("prpCitemKindsTemp[6].netPremium","");
-		params.put("prpCitemKindsTemp[6].taxPremium","");
-		params.put("prpCitemKindsTemp[6].taxRate","");
-		params.put("prpCitemKindsTemp[6].dutyFlag","");
-		params.put("prpCitemKindsTemp[7].min","");
-		params.put("prpCitemKindsTemp[7].max","");
-		params.put("prpCitemKindsTemp[7].itemKindNo","");
-		params.put("kindcodesub","");
-		params.put("prpCitemKindsTemp[7].clauseCode","050065");
-		params.put("prpCitemKindsTemp[7].kindCode","050253");
-		params.put("relateSpecial[7]","      ");
-		params.put("prpCitemKindsTemp[7].kindName","指定修理厂险");
-		params.put("prpCitemKindsTemp[7].amount","");
-		params.put("prpCitemKindsTemp[7].calculateFlag","N32N000");
-		params.put("prpCitemKindsTemp[7].startDate","");
-		params.put("prpCitemKindsTemp[7].startHour","");
-		params.put("prpCitemKindsTemp[7].endDate","");
-		params.put("prpCitemKindsTemp[7].endHour","");
-		params.put("prpCitemKindsTemp[7].flag"," 200000");
-		params.put("prpCitemKindsTemp[7].basePremium","");
-		params.put("prpCitemKindsTemp[7].riskPremium","");
-		params.put("prpCitemKindsTemp[7].rate","");
-		params.put("prpCitemKindsTemp[7].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[7].disCount","");
-		params.put("prpCitemKindsTemp[7].premium","");
-		params.put("prpCitemKindsTemp[7].netPremium","");
-		params.put("prpCitemKindsTemp[7].taxPremium","");
-		params.put("prpCitemKindsTemp[7].taxRate","");
-		params.put("prpCitemKindsTemp[7].dutyFlag","");
-		params.put("prpCitemKindsTemp[8].min","");
-		params.put("prpCitemKindsTemp[8].max","");
-		params.put("prpCitemKindsTemp[8].itemKindNo","");
-		params.put("kindcodesub","");
-		params.put("prpCitemKindsTemp[8].clauseCode","050057");
-		params.put("prpCitemKindsTemp[8].kindCode","050311");
-		params.put("relateSpecial[8]","050935");
-		params.put("prpCitemKindsTemp[8].kindName","自燃损失险");
-		params.put("prpCitemKindsTemp[8].amount","");
-		params.put("prpCitemKindsTemp[8].calculateFlag","N12Y000");
-		params.put("prpCitemKindsTemp[8].startDate","");
-		params.put("prpCitemKindsTemp[8].startHour","");
-		params.put("prpCitemKindsTemp[8].endDate","");
-		params.put("prpCitemKindsTemp[8].endHour","");
-		params.put("prpCitemKindsTemp[8].flag"," 200000");
-		params.put("prpCitemKindsTemp[8].basePremium","");
-		params.put("prpCitemKindsTemp[8].riskPremium","");
-		params.put("prpCitemKindsTemp[8].rate","");
-		params.put("prpCitemKindsTemp[8].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[8].disCount","");
-		params.put("prpCitemKindsTemp[8].premium","");
-		params.put("prpCitemKindsTemp[8].netPremium","");
-		params.put("prpCitemKindsTemp[8].taxPremium","");
-		params.put("prpCitemKindsTemp[8].taxRate","");
-		params.put("prpCitemKindsTemp[8].dutyFlag","");
-		params.put("prpCitemKindsTemp[9].min","");
-		params.put("prpCitemKindsTemp[9].max","");
-		params.put("prpCitemKindsTemp[9].itemKindNo","");
-		params.put("kindcodesub","");
-		params.put("prpCitemKindsTemp[9].clauseCode","050060");
-		params.put("prpCitemKindsTemp[9].kindCode","050461");
-		params.put("relateSpecial[9]","050938");
-		params.put("prpCitemKindsTemp[9].kindName","发动机涉水损失险");
-		params.put("prpCitemKindsTemp[9].amount","");
-		params.put("prpCitemKindsTemp[9].calculateFlag","N32Y000");
-		params.put("prpCitemKindsTemp[9].startDate","");
-		params.put("prpCitemKindsTemp[9].startHour","");
-		params.put("prpCitemKindsTemp[9].endDate","");
-		params.put("prpCitemKindsTemp[9].endHour","");
-		params.put("prpCitemKindsTemp[9].flag"," 200000");
-		params.put("prpCitemKindsTemp[9].basePremium","");
-		params.put("prpCitemKindsTemp[9].riskPremium","");
-		params.put("prpCitemKindsTemp[9].rate","");
-		params.put("prpCitemKindsTemp[9].benchMarkPremium","");
-		params.put("prpCitemKindsTemp[9].disCount","");
-		params.put("prpCitemKindsTemp[9].premium","");
-		params.put("prpCitemKindsTemp[9].netPremium","");
-		params.put("prpCitemKindsTemp[9].taxPremium","");
-		params.put("prpCitemKindsTemp[9].taxRate","");
-		params.put("prpCitemKindsTemp[9].dutyFlag","");
-		params.put("prpCitemKindsTemp.itemKindSpecialSumPremium","308.35");
-		params.put("prpCitemKindsTemp[10].chooseFlag","on");
-		params.put("prpCitemKindsTemp[10].itemKindNo","");
-		params.put("prpCitemKindsTemp[10].startDate","");
-		params.put("prpCitemKindsTemp[10].kindCode","050930");
-		params.put("prpCitemKindsTemp[10].kindName","不计免赔险（车损险）");
-		params.put("prpCitemKindsTemp[10].startHour","");
-		params.put("prpCitemKindsTemp[10].endDate","");
-		params.put("prpCitemKindsTemp[10].endHour","");
-		params.put("prpCitemKindsTemp[10].calculateFlag","N33N000");
-		params.put("relateSpecial[10]","");
-		params.put("prpCitemKindsTemp[10].clauseCode","050066");
-		params.put("prpCitemKindsTemp[10].flag"," 200000");
-		params.put("prpCitemKindsTemp[10].basePremium","0");
-		params.put("prpCitemKindsTemp[10].riskPremium","0");
-		params.put("prpCitemKindsTemp[10].amount","0");
-		params.put("prpCitemKindsTemp[10].rate","15.0000");
-		params.put("prpCitemKindsTemp[10].benchMarkPremium","324.58");
-		params.put("prpCitemKindsTemp[10].disCount","0.95000000");
-		params.put("prpCprofitDetailsTemp[9].chooseFlag","on");
-		params.put("prpCprofitDetailsTemp[9].profitName","无赔款优待及上年赔款记录");
-		params.put("prpCprofitDetailsTemp[9].condition","新保或上年发生1次赔款");
-		params.put("profitRateTemp[9]","1.00000000");
-		params.put("prpCprofitDetailsTemp[9].profitRate","100");
-		params.put("prpCprofitDetailsTemp[9].profitRateMin","100");
-		params.put("prpCprofitDetailsTemp[9].profitRateMax","130");
-		params.put("prpCprofitDetailsTemp[9].id.proposalNo","");
-		params.put("prpCprofitDetailsTemp[9].id.itemKindNo","2");
-		params.put("prpCprofitDetailsTemp[9].id.profitCode","C01");
-		params.put("prpCprofitDetailsTemp[9].id.serialNo","0");
-		params.put("prpCprofitDetailsTemp[9].id.profitType","1");
-		params.put("prpCprofitDetailsTemp[9].kindCode","050930");
-		params.put("prpCprofitDetailsTemp[9].conditionCode","C0104");
-		params.put("prpCprofitDetailsTemp[9].flag","");
-		params.put("prpCprofitDetailsTemp[10].chooseFlag","on");
-		params.put("prpCprofitDetailsTemp[10].profitName","自主渠道系数");
-		params.put("prpCprofitDetailsTemp[10].condition","经纪及代理渠道业务优惠系数");
-		params.put("profitRateTemp[10]","0.90000000");
-		params.put("prpCprofitDetailsTemp[10].profitRate","90");
-		params.put("prpCprofitDetailsTemp[10].profitRateMin","75");
-		params.put("prpCprofitDetailsTemp[10].profitRateMax","125");
-		params.put("prpCprofitDetailsTemp[10].id.proposalNo","");
-		params.put("prpCprofitDetailsTemp[10].id.itemKindNo","2");
-		params.put("prpCprofitDetailsTemp[10].id.profitCode","C02");
-		params.put("prpCprofitDetailsTemp[10].id.serialNo","0");
-		params.put("prpCprofitDetailsTemp[10].id.profitType","1");
-		params.put("prpCprofitDetailsTemp[10].kindCode","050930");
-		params.put("prpCprofitDetailsTemp[10].conditionCode","C0206");
-		params.put("prpCprofitDetailsTemp[10].flag","");
-		params.put("prpCprofitDetailsTemp[11].chooseFlag","on");
-		params.put("prpCprofitDetailsTemp[11].profitName","自主核保优惠系数");
-		params.put("prpCprofitDetailsTemp[11].condition","自主核保优惠系数");
-		params.put("profitRateTemp[11]","1.05555556");
-		params.put("prpCprofitDetailsTemp[11].profitRate","105.555556");
-		params.put("prpCprofitDetailsTemp[11].profitRateMin","75");
-		params.put("prpCprofitDetailsTemp[11].profitRateMax","125");
-		params.put("prpCprofitDetailsTemp[11].id.proposalNo","");
-		params.put("prpCprofitDetailsTemp[11].id.itemKindNo","2");
-		params.put("prpCprofitDetailsTemp[11].id.profitCode","C03");
-		params.put("prpCprofitDetailsTemp[11].id.serialNo","0");
-		params.put("prpCprofitDetailsTemp[11].id.profitType","1");
-		params.put("prpCprofitDetailsTemp[11].kindCode","050930");
-		params.put("prpCprofitDetailsTemp[11].conditionCode","C03  ");
-		params.put("prpCprofitDetailsTemp[11].flag","");
-		params.put("prpCitemKindsTemp[10].premium","308.35");
-		params.put("prpCitemKindsTemp[10].netPremium","290.90");
-		params.put("prpCitemKindsTemp[10].taxPremium","17.45");
-		params.put("prpCitemKindsTemp[10].taxRate","6.00");
-		params.put("prpCitemKindsTemp[10].dutyFlag","2");
-		params.put("hidden_index_itemKind","10");
-		params.put("hidden_index_profitDetial","0");
-		params.put("prpCitemKindsTemp_[0].chooseFlag","on");
-		params.put("prpCitemKindsTemp_[0].itemKindNo","");
-		params.put("prpCitemKindsTemp_[0].startDate","");
-		params.put("prpCitemKindsTemp_[0].kindCode","");
-		params.put("prpCitemKindsTemp_[0].kindName","");
-		params.put("prpCitemKindsTemp_[0].startHour","");
-		params.put("prpCitemKindsTemp_[0].endDate","");
-		params.put("prpCitemKindsTemp_[0].endHour","");
-		params.put("prpCitemKindsTemp_[0].calculateFlag","");
-		params.put("relateSpecial_[0]","");
-		params.put("prpCitemKindsTemp_[0].clauseCode","");
-		params.put("prpCitemKindsTemp_[0].flag","");
-		params.put("prpCitemKindsTemp_[0].basePremium","");
-		params.put("prpCitemKindsTemp_[0].riskPremium","");
-		params.put("prpCitemKindsTemp_[0].amount","");
-		params.put("prpCitemKindsTemp_[0].rate","");
-		params.put("prpCitemKindsTemp_[0].benchMarkPremium","");
-		params.put("prpCitemKindsTemp_[0].disCount","");
-		params.put("prpCitemKindsTemp_[0].premium","");
-		params.put("prpCitemKindsTemp_[0].netPremium","");
-		params.put("prpCitemKindsTemp_[0].taxPremium","");
-		params.put("prpCitemKindsTemp_[0].taxRate","");
-		params.put("prpCitemKindsTemp_[0].dutyFlag","");
-		params.put("prpCitemKindsTemp_[0].unitAmount","");
-		params.put("prpCitemKindsTemp_[0].quantity","");
-		params.put("prpCitemKindsTemp_[0].value","");
-		params.put("prpCitemKindsTemp_[0].value","50");
-		params.put("prpCitemKindsTemp_[0].unitAmount","");
-		params.put("prpCitemKindsTemp_[0].quantity","");
-		params.put("prpCitemKindsTemp_[0].modeCode","10");
-		params.put("prpCitemKindsTemp_[0].modeCode","1");
-		params.put("prpCitemKindsTemp_[0].modeCode","1");
-		params.put("prpCitemKindsTemp_[0].value","1000");
-		params.put("prpCitemKindsTemp_[0].amount","2000");
-		params.put("prpCitemKindsTemp_[0].amount","2000");
-		params.put("prpCitemKindsTemp_[0].amount","10000");
-		params.put("prpCitemKindsTemp_[0].unitAmount","");
-		params.put("prpCitemKindsTemp_[0].quantity","60");
-		params.put("prpCitemKindsTemp_[0].unitAmount","");
-		params.put("prpCitemKindsTemp_[0].quantity","90");
-		params.put("prpCitemKindsTemp_[0].amount","");
-		params.put("prpCitemKindsTemp_[0].amount","50000.00");
-		params.put("prpCitemKindsTemp_[0].amount","10000.00");
-		params.put("prpCitemKindsTemp_[0].amount","5000.00");
-		params.put("itemKindLoadFlag","");
-		params.put("prpCprofitFactorsTemp[3].chooseFlag","on");
-		params.put("serialNo[3]","1");
-		params.put("prpCprofitFactorsTemp[3].profitName","无赔款优待及上年赔款记录");
-		params.put("prpCprofitFactorsTemp[3].condition","新保或上年发生1次赔款");
-		params.put("rateTemp[3]","1.00000000");
-		params.put("prpCprofitFactorsTemp[3].rate","100");
-		params.put("prpCprofitFactorsTemp[3].lowerRate","100");
-		params.put("prpCprofitFactorsTemp[3].upperRate","130");
-		params.put("prpCprofitFactorsTemp[3].id.profitCode","C01");
-		params.put("prpCprofitFactorsTemp[3].id.conditionCode","C0104");
-		params.put("prpCprofitFactorsTemp[3].flag","");
-		params.put("prpCprofitFactorsTemp[4].chooseFlag","on");
-		params.put("serialNo[4]","2");
-		params.put("prpCprofitFactorsTemp[4].profitName","自主渠道系数");
-		params.put("prpCprofitFactorsTemp[4].condition","经纪及代理渠道业务优惠系数");
-		params.put("rateTemp[4]","0.90000000");
-		params.put("prpCprofitFactorsTemp[4].rate","90");
-		params.put("prpCprofitFactorsTemp[4].lowerRate","75");
-		params.put("prpCprofitFactorsTemp[4].upperRate","125");
-		params.put("prpCprofitFactorsTemp[4].id.profitCode","C02");
-		params.put("prpCprofitFactorsTemp[4].id.conditionCode","C0206");
-		params.put("prpCprofitFactorsTemp[4].flag","");
-		params.put("prpCprofitFactorsTemp[5].chooseFlag","on");
-		params.put("serialNo[5]","3");
-		params.put("prpCprofitFactorsTemp[5].profitName","自主核保优惠系数");
-		params.put("prpCprofitFactorsTemp[5].condition","自主核保优惠系数");
-		params.put("rateTemp[5]","1.05555556");
-		params.put("prpCprofitFactorsTemp[5].rate","105.555556");
-		params.put("prpCprofitFactorsTemp[5].lowerRate","75");
-		params.put("prpCprofitFactorsTemp[5].upperRate","125");
-		params.put("prpCprofitFactorsTemp[5].id.profitCode","C03");
-		params.put("prpCprofitFactorsTemp[5].id.conditionCode","C03");
-		params.put("prpCprofitFactorsTemp[5].flag","");
-		params.put("BIdemandNo","V0101PICC440316001479707380121");
-		params.put("BIdemandTime","2016-11-21");
-		params.put("bIRiskWarningType","");
-		params.put("noDamageYearsBIPlat","0");
-		
-		params.put("lastDamagedBITemp","");
-		params.put("DAZlastDamagedBI","");
-		params.put("prpCitemCarExt.thisDamagedBI","0");
-		params.put("prpCitemCarExt.noDamYearsBI","0");
-		params.put("noDamYearsBINumber","0");
-		params.put("prpCitemCarExt.lastDamagedCI","0");
-		params.put("BIDemandClaim_Flag","");
-		params.put("BiInsureDemandPay_[0].id.serialNo","");
-		params.put("BiInsureDemandPay_[0].payCompany","");
-		params.put("BiInsureDemandPay_[0].claimregistrationno","");
-		params.put("BiInsureDemandPay_[0].compensateNo","");
-		params.put("BiInsureDemandPay_[0].lossTime","");
-		params.put("BiInsureDemandPay_[0].endcCaseTime","");
-		params.put("PrpCmain_[0].startDate","");
-		params.put("PrpCmain_[0].endDate","");
-		params.put("BiInsureDemandPay_[0].lossFee","");
-		params.put("BiInsureDemandPay_[0].payType","");
-		params.put("BiInsureDemandPay_[0].personpayType","");
-		params.put("BiInsureDemandLoss_[0].id.serialNo","");
-		params.put("BiInsureDemandLoss_[0].peccancyid","");
-		params.put("BiInsureDemandLoss_[0].lossAction","");
-		params.put("BiInsureDemandLoss_[0].lossTime","");
-		params.put("BiInsureDemandLoss_[0].lossDddress","");
-		params.put("BiInsureDemandLoss_[0].decisionid","");
-		params.put("BiInsureDemandLoss_[0].lossAcceptDate","");
-		params.put("bIRiskWarningClaimItems_[0].id.serialNo","");
-		params.put("bIRiskWarningClaimItems_[0].riskWarningType","");
-		params.put("bIRiskWarningClaimItems_[0].claimSequenceNo","");
-		params.put("bIRiskWarningClaimItems_[0].insurerCode","");
-		params.put("bIRiskWarningClaimItems_[0].lossTime","");
-		params.put("bIRiskWarningClaimItems_[0].lossArea","");
-		params.put("prpCitemKindCI.shortRate","100");
-		params.put("prpCitemKindCI.familyNo","1");
-		params.put("cIBPFlag","0");
-		params.put("prpCitemKindCI.unitAmount","0");
-		params.put("prpCitemKindCI.id.itemKindNo","");
-		params.put("prpCitemKindCI.kindCode","050100");
-		params.put("prpCitemKindCI.clauseCode","050001");
-		params.put("prpCitemKindCI.riskPremium","");
-		params.put("prpCitemKindCI.kindName","机动车交通事故强制责任保险");
-		params.put("prpCitemKindCI.calculateFlag","Y");
-		params.put("prpCitemKindCI.basePremium","");
-		params.put("prpCitemKindCI.quantity","1");
-		params.put("prpCitemKindCI.amount","122000");
-		params.put("prpCitemKindCI.deductible","");
-		params.put("prpCitemKindCI.adjustRate","1");
-		params.put("prpCitemKindCI.rate","0");
-		params.put("prpCitemKindCI.benchMarkPremium","0");
-		params.put("prpCitemKindCI.disCount","1");
-		params.put("prpCitemKindCI.premium","");
-		params.put("prpCitemKindCI.flag","");
-		params.put("prpCitemKindCI.netPremium","");
-		params.put("prpCitemKindCI.taxPremium","");
-		params.put("prpCitemKindCI.taxRate","");
-		params.put("prpCitemKindCI.dutyFlag","");
-		params.put("prpCtrafficDetails_[0].trafficType","1");
-		params.put("prpCtrafficDetails_[0].accidentType","1");
-		params.put("prpCtrafficDetails_[0].indemnityDuty","有责");
-		params.put("prpCtrafficDetails_[0].sumPaid","");
-		params.put("prpCtrafficDetails_[0].accidentDate","");
-		params.put("prpCtrafficDetails_[0].payComCode","");
-		params.put("prpCtrafficDetails_[0].flag","");
-		params.put("prpCtrafficDetails_[0].id.serialNo","");
-		params.put("prpCtrafficDetails_[0].trafficType","1");
-		params.put("prpCtrafficDetails_[0].accidentType","1");
-		params.put("prpCtrafficDetails_[0].indemnityDuty","有责");
-		params.put("prpCtrafficDetails_[0].sumPaid","");
-		params.put("prpCtrafficDetails_[0].accidentDate","");
-		params.put("prpCtrafficDetails_[0].payComCode","");
-		params.put("prpCtrafficDetails_[0].flag","");
-		params.put("prpCtrafficDetails_[0].id.serialNo","");
-		params.put("prpCitemCarExt_CI.rateRloatFlag","01");
-		params.put("prpCitemCarExt_CI.noDamYearsCI","1");
-		params.put("prpCitemCarExt_CI.lastDamagedCI","0");
-		params.put("prpCitemCarExt_CI.flag","");
-		params.put("prpCitemCarExt_CI.damFloatRatioCI","0");
-		params.put("prpCitemCarExt_CI.offFloatRatioCI","0");
-		params.put("prpCitemCarExt_CI.thisDamagedCI","0");
-		params.put("prpCitemCarExt_CI.flag","");
-		params.put("hidden_index_ctraffic_NOPlat_Drink","0");
-		params.put("hidden_index_ctraffic_NOPlat","0");
-		params.put("ciInsureDemand.demandNo","");
-		params.put("ciInsureDemand.demandTime","");
-		params.put("ciInsureDemand.restricFlag","");
-		params.put("ciInsureDemand.preferentialDay","");
-		params.put("ciInsureDemand.preferentialPremium","");
-		params.put("ciInsureDemand.preferentialFormula ","");
-		params.put("ciInsureDemand.lastyearenddate","");
-		
-		params.put("ciInsureDemand.rateRloatFlag","00");
-		params.put("ciInsureDemand.claimAdjustReason","A1");
-		params.put("ciInsureDemand.peccancyAdjustReason","V1");
-		params.put("cIRiskWarningType","");
-		params.put("CIDemandFecc_Flag","");
-		params.put("ciInsureDemandLoss_[0].id.serialNo","");
-		params.put("ciInsureDemandLoss_[0].lossTime","");
-		params.put("ciInsureDemandLoss_[0].lossDddress","");
-		params.put("ciInsureDemandLoss_[0].lossAction","");
-		params.put("ciInsureDemandLoss_[0].coeff","");
-		params.put("ciInsureDemandLoss_[0].lossType","");
-		params.put("ciInsureDemandLoss_[0].identifyType","");
-		params.put("ciInsureDemandLoss_[0].identifyNumber","");
-		params.put("ciInsureDemandLoss_[0].lossAcceptDate","");
-		params.put("ciInsureDemandLoss_[0].processingStatus","");
-		params.put("ciInsureDemandLoss_[0].lossActionDesc","");
-		params.put("CIDemandClaim_Flag","");
-		params.put("ciInsureDemandPay_[0].id.serialNo","");
-		params.put("ciInsureDemandPay_[0].payCompany","");
-		params.put("ciInsureDemandPay_[0].claimregistrationno","");
-		params.put("ciInsureDemandPay_[0].compensateNo","");
-		params.put("ciInsureDemandPay_[0].lossTime","");
-		params.put("ciInsureDemandPay_[0].endcCaseTime","");
-		params.put("ciInsureDemandPay_[0].lossFee","");
-		params.put("ciInsureDemandPay_[0].payType","");
-		params.put("ciInsureDemandPay_[0].personpayType","");
-		params.put("ciRiskWarningClaimItems_[0].id.serialNo","");
-		params.put("ciRiskWarningClaimItems_[0].riskWarningType","");
-		params.put("ciRiskWarningClaimItems_[0].claimSequenceNo","");
-		params.put("ciRiskWarningClaimItems_[0].insurerCode","");
-		params.put("ciRiskWarningClaimItems_[0].lossTime","");
-		params.put("ciRiskWarningClaimItems_[0].lossArea","");
-		params.put("ciInsureDemand.licenseNo","");
-		params.put("ciInsureDemand.licenseType","");
-		params.put("ciInsureDemand.useNatureCode","");
-		params.put("ciInsureDemand.frameNo","");
-		params.put("ciInsureDemand.engineNo","");
-		params.put("ciInsureDemand.licenseColorCode","");
-		params.put("ciInsureDemand.carOwner","");
-		params.put("ciInsureDemand.enrollDate","");
-		params.put("ciInsureDemand.makeDate","");
-		params.put("ciInsureDemand.seatCount","");
-		params.put("ciInsureDemand.tonCount","");
-		params.put("ciInsureDemand.validCheckDate","");
-		params.put("ciInsureDemand.manufacturerName","");
-		params.put("ciInsureDemand.modelCode","");
-		params.put("ciInsureDemand.brandCName","");
-		params.put("ciInsureDemand.brandName","");
-		params.put("ciInsureDemand.carKindCode","");
-		params.put("ciInsureDemand.checkDate","");
-		params.put("ciInsureDemand.endValidDate","");
-		params.put("ciInsureDemand.carStatus","");
-		params.put("ciInsureDemand.haulage","");
-		params.put("_taxUnit","");
-		params.put("taxPlatFormTime","2013-01-26");
-		params.put("iniPrpCcarShipTax_Flag","");
-		params.put("strCarShipFlag","1");
-		params.put("prpCcarShipTax.taxType","1");
-		params.put("prpCcarShipTax.calculateMode","C3");
-		params.put("prpCcarShipTax.leviedDate","");
-		params.put("prpCcarShipTax.carKindCode","A01");
-		params.put("prpCcarShipTax.model","B11");
-		params.put("prpCcarShipTax.taxPayerIdentNo","430224196402131230");
-		params.put("prpCcarShipTax.taxPayerNumber","430224196402131230");
-		params.put("prpCcarShipTax.carLotEquQuality","1505");
-		params.put("prpCcarShipTax.taxPayerCode","4403106001747475");
-		params.put("prpCcarShipTax.id.itemNo","1");
-		params.put("prpCcarShipTax.taxPayerNature","3");
-		params.put("prpCcarShipTax.taxPayerName","张力平");
-		params.put("prpCcarShipTax.taxUnit","");
-		params.put("prpCcarShipTax.taxComCode","");
-		params.put("prpCcarShipTax.taxComName","");
-		params.put("prpCcarShipTax.taxExplanation","");
-		params.put("prpCcarShipTax.taxAbateReason","");
-		params.put("prpCcarShipTax.dutyPaidProofNo_1","");
-		params.put("prpCcarShipTax.dutyPaidProofNo_2","");
-		params.put("prpCcarShipTax.dutyPaidProofNo","");
-		params.put("prpCcarShipTax.taxAbateRate","");
-		params.put("prpCcarShipTax.taxAbateAmount","");
-		params.put("prpCcarShipTax.taxAbateType","1");
-		params.put("prpCcarShipTax.taxUnitAmount","");
-		params.put("prpCcarShipTax.prePayTaxYear","2015");
-		params.put("prpCcarShipTax.prePolicyEndDate","");
-		params.put("prpCcarShipTax.payStartDate","");
-		params.put("prpCcarShipTax.payEndDate","");
-		params.put("prpCcarShipTax.thisPayTax","");
-		params.put("prpCcarShipTax.prePayTax","");
-		params.put("prpCcarShipTax.taxItemCode","");
-		params.put("prpCcarShipTax.taxItemName","");
-		params.put("prpCcarShipTax.baseTaxation","");
-		params.put("prpCcarShipTax.taxRelifFlag","");
-		params.put("prpCcarShipTax.delayPayTax","");
-		params.put("prpCcarShipTax.sumPayTax","");
-		params.put("CarShipInit_Flag","");
-		params.put("prpCcarShipTax.flag","");
-		params.put("quotationtaxPayerCode","");
-		params.put("prpCcarShipTax.isType02Lice","N");
-		params.put("prpCcarShipTax.type02LiceYExaMon","");
-		params.put("prpCcarShipTax.finesTax","0.00");
-		params.put("prpCcarShipTax.isHangOnWhether","N");
-		params.put("prpCcarShipTax.alwaysQuality","");
-		params.put("prpCcarShipTax.remark","");
-		params.put("prpCcarShipTax.identifyTypeTax","01");
-		params.put("prpCcarShipTax.carKindCodeTax","A01");
-		params.put("prpCcarShipTax.licenseTypeTax","02");
-		params.put("prpCPrePayTaxDetailTemps_[0].id.serialNo","");
-		params.put("prpCPrePayTaxDetailTemps_[0].payYear","");
-		params.put("prpCPrePayTaxDetailTemps_[0].prePayTax","");
-		params.put("prpCPrePayTaxDetailTemps_[0].dutyPaidProofNo","");
-		params.put("hidden_index_prePayTaxDetail","0");
-		params.put("noBringOutEngage","");
-		params.put("prpCengageTemps_[0].id.serialNo","");
-		params.put("prpCengageTemps_[0].clauseCode","");
-		params.put("prpCengageTemps_[0].clauseName","");
-		params.put("clauses_[0]","");
-		params.put("prpCengageTemps_[0].flag","");
-		params.put("prpCengageTemps_[0].engageFlag","");
-		params.put("prpCengageTemps_[0].maxCount","");
-		params.put("prpCengageTemps_[0].clauses","");
-		params.put("iniPrpCengage_Flag","");
-		params.put("hidden_index_engage","0");
-		params.put("costRateForPG","");
-		params.put("certificateNo","");
-		params.put("levelMaxRate","");
-		params.put("maxRateScm","");
-		params.put("levelMaxRateCi","");
-		params.put("maxRateScmCi","");
-		params.put("isModifyBI","");
-		params.put("isModifyCI","");
-		params.put("sumBICoinsRate","");
-		params.put("sumCICoinsRate","");
-		params.put("netCommission_Switch","");
-		params.put("agentsRateBI","");
-		params.put("agentsRateCI","");
-		params.put("prpVisaRecordP.id.visaNo","");
-		params.put("prpVisaRecordP.id.visaCode","");
-		params.put("prpVisaRecordP.visaName","");
-		params.put("prpVisaRecordP.printType","101");
-		params.put("prpVisaRecordT.id.visaNo","");
-		params.put("prpVisaRecordT.id.visaCode","");
-		params.put("prpVisaRecordT.visaName","");
-		params.put("prpVisaRecordT.printType","103");
-		params.put("prpCmain.sumAmount","111800");
-		params.put("prpCmain.sumDiscount","124.42");
-		params.put("prpCstampTaxBI.biTaxRate","");
-		params.put("prpCstampTaxBI.biPayTax","0");
-		params.put("prpCmain.sumPremium","2364.01");
-		params.put("prpVisaRecordPCI.id.visaNo","");
-		params.put("prpVisaRecordPCI.id.visaCode","");
-		params.put("prpVisaRecordPCI.visaName","");
-		params.put("prpVisaRecordPCI.printType","201");
-		params.put("prpVisaRecordTCI.id.visaNo","");
-		params.put("prpVisaRecordTCI.id.visaCode","");
-		params.put("prpVisaRecordTCI.visaName","");
-		params.put("prpVisaRecordTCI.printType","203");
-		params.put("prpCmainCI.sumAmount","");
-		params.put("prpCmainCI.sumDiscount","");
-		params.put("prpCstampTaxCI.ciTaxRate","");
-		params.put("prpCstampTaxCI.ciPayTax","");
-		params.put("prpCmainCI.sumPremium","");
-		params.put("prpCmainCar.rescueFundRate","");
-		params.put("prpCmainCar.resureFundFee","0");
-		params.put("prpCmain.projectCode","");
-		params.put("projectCode","");
-		params.put("costRateUpper","");
-		params.put("prpCmainCommon.ext3","");
-		params.put("importantProjectCode","");
-		params.put("prpCmain.operatorCode","99355911");
-		params.put("operatorName","何锐玲");
-		params.put("operateDateShow","");
-		params.put("prpCmain.coinsFlag","00");
-		params.put("coinsFlagBak","00");
-		params.put("premium","");
-		params.put("prpCmain.language","CNY");
-		params.put("prpCmain.policySort","1");
-		params.put("prpCmain.policyRelCode","");
-		params.put("prpCmain.policyRelName","");
-		params.put("subsidyRate","");
-		params.put("policyRel","");
-		params.put("prpCmain.reinsFlag","0");
-		params.put("prpCmain.agriFlag","0");
-		params.put("premium","");
-		params.put("prpCmainCar.carCheckStatus","0");
-		params.put("prpCmainCar.carChecker","");
-		params.put("carCheckerTranslate","");
-		params.put("prpCmainCar.carCheckTime","");
-		params.put("prpCmainCommon.DBCFlag","0");
-		params.put("prpCmain.argueSolution","1");
-		params.put("prpCmain.arbitBoardName","");
-		params.put("arbitBoardNameDes","");
-		params.put("prpCcommissionsTemp_[0].costType","");
-		params.put("prpCcommissionsTemp_[0].riskCode","");
-		params.put("prpCcommissionsTemp_[0].currency","AED");
-		params.put("prpCcommissionsTemp_[0].adjustFlag","0");
-		params.put("prpCcommissionsTemp_[0].upperFlag","0");
-		params.put("prpCcommissionsTemp_[0].auditRate","");
-		params.put("prpCcommissionsTemp_[0].auditFlag","1");
-		params.put("prpCcommissionsTemp_[0].sumPremium","");
-		params.put("prpCcommissionsTemp_[0].costRate","");
-		params.put("prpCcommissionsTemp_[0].costRateUpper","");
-		params.put("prpCcommissionsTemp_[0].coinsRate","100");
-		params.put("prpCcommissionsTemp_[0].coinsDeduct","1");
-		params.put("prpCcommissionsTemp_[0].costFee","");
-		params.put("prpCcommissionsTemp_[0].agreementNo","");
-		params.put("prpCcommissionsTemp_[0].configCode","");
-		params.put("hidden_index_commission","0");
-		params.put("scmIsOpen","1111100000");
-		params.put("prpCagents_[0].roleType","");
-		params.put("roleTypeName_[0]","");
-		params.put("prpCagents_[0].id.roleCode","");
-		params.put("prpCagents_[0].roleCode_uni","");
-		params.put("prpCagents_[0].roleName","");
-		params.put("prpCagents_[0].costRate","");
-		params.put("prpCagents_[0].costFee","");
-		params.put("prpCagents_[0].flag","");
-		params.put("prpCagents_[0].businessNature","");
-		params.put("prpCagents_[0].isMain","");
-		params.put("prpCagentCIs_[0].roleType","");
-		params.put("roleTypeNameCI_[0]","");
-		params.put("prpCagentCIs_[0].id.roleCode","");
-		params.put("prpCagentCIs_[0].roleCode_uni","");
-		params.put("prpCagentCIs_[0].roleName","");
-		params.put("prpCagentCIs_[0].costRate","");
-		params.put("prpCagentCIs_[0].costFee","");
-		params.put("prpCagentCIs_[0].flag","");
-		params.put("prpCagentCIs_[0].businessNature","");
-		params.put("prpCagentCIs_[0].isMain","");
-		params.put("commissionCount","");
-		params.put("prpCsaless_[0].salesDetailName","");
-		params.put("prpCsaless_[0].riskCode","");
-		params.put("prpCsaless_[0].splitRate","");
-		params.put("prpCsaless_[0].oriSplitNumber","");
-		params.put("prpCsaless_[0].splitFee","");
-		params.put("prpCsaless_[0].agreementNo","");
-		params.put("prpCsaless_[0].id.salesCode","");
-		params.put("prpCsaless_[0].salesName","");
-		params.put("prpCsaless_[0].id.proposalNo","");
-		params.put("prpCsaless_[0].id.salesDetailCode","");
-		params.put("prpCsaless_[0].totalRate","");
-		params.put("prpCsaless_[0].splitWay","");
-		params.put("prpCsaless_[0].totalRateMax","");
-		params.put("prpCsaless_[0].flag","");
-		params.put("prpCsaless_[0].remark","");
-		params.put("commissionPower","15,");
-		params.put("hidden_index_prpCsales","0");
-		params.put("prpCsalesDatils_[0].id.salesCode","");
-		params.put("prpCsalesDatils_[0].id.proposalNo","");
-		params.put("prpCsalesDatils_[0].id.  ","");
-		params.put("prpCsalesDatils_[0].id.roleType","");
-		params.put("prpCsalesDatils_[0].id.roleCode","");
-		params.put("prpCsalesDatils_[0].currency","");
-		params.put("prpCsalesDatils_[0].splitDatilRate","");
-		params.put("prpCsalesDatils_[0].splitDatilFee","");
-		params.put("prpCsalesDatils_[0].roleName","");
-		params.put("prpCsalesDatils_[0].splitWay","");
-		params.put("prpCsalesDatils_[0].flag","");
-		params.put("prpCsalesDatils_[0].remark","");
-		params.put("hidden_index_prpCsalesDatil","0");
-		params.put("csManageSwitch","1");
-		params.put("prpCmainChannel.agentCode","");
-		params.put("prpCmainChannel.agentName","");
-		params.put("prpCmainChannel.organCode","");
-		params.put("prpCmainChannel.organCName","");
-		params.put("comCodeType","");
-		params.put("prpCmainChannel.identifyNumber","");
-		params.put("prpCmainChannel.identifyType","");
-		params.put("prpCmainChannel.manOrgCode","");
-		params.put("prpCmain.remark","");
-		params.put("prpDdismantleDetails_[0].id.agreementNo","");
-		params.put("prpDdismantleDetails_[0].flag","");
-		params.put("prpDdismantleDetails_[0].id.configCode","");
-		params.put("prpDdismantleDetails_[0].id.assignType","");
-		params.put("prpDdismantleDetails_[0].id.roleCode","");
-		params.put("prpDdismantleDetails_[0].roleName","");
-		params.put("prpDdismantleDetails_[0].costRate","");
-		params.put("prpDdismantleDetails_[0].roleFlag","");
-		params.put("prpDdismantleDetails_[0].businessNature","");
-		params.put("prpDdismantleDetails_[0].roleCode_uni","");
-		params.put("hidden_index_prpDdismantleDetails","0");
-		params.put("payTimes","1");
-		params.put("prpCplanTemps_[0].payNo","");
-		params.put("prpCplanTemps_[0].serialNo","");
-		params.put("prpCplanTemps_[0].endorseNo","");
-		params.put("cplan_[0].payReasonC","");
-		params.put("prpCplanTemps_[0].payReason","");
-		params.put("prpCplanTemps_[0].planDate","");
-		params.put("prpCplanTemps_[0].currency","");
-		params.put("description_[0].currency","");
-		params.put("prpCplanTemps_[0].planFee","");
-		params.put("cplans_[0].planFee","");
-		params.put("cplans_[0].backPlanFee","");
-		params.put("prpCplanTemps_[0].netPremium","");
-		params.put("prpCplanTemps_[0].taxPremium","");
-		params.put("prpCplanTemps_[0].delinquentFee","");
-		params.put("prpCplanTemps_[0].flag","");
-		params.put("prpCplanTemps_[0].subsidyRate","");
-		params.put("prpCplanTemps_[0].isBICI","");
-		params.put("iniPrpCplan_Flag","");
-		params.put("loadFlag9","");
-		params.put("planfee_index","0");
-		params.put("planStr","");
-		params.put("planPayTimes","");
-		params.put("prpCmainCar.flag","1");
-		params.put("prpCmainCarFlag","1");
-		params.put("coinsSchemeCode","");
-		params.put("coinsSchemeName","");
-		params.put("mainPolicyNo","");
-		params.put("prpCcoinsMains_[0].id.serialNo","1");
-		params.put("prpCcoinsMains_[0].coIdentity","1");
-		params.put("prpCcoinsMains_[0].coinsCode","002");
-		params.put("prpCcoinsMains_[0].coinsName","人保财产");
-		params.put("prpCcoinsMains_[0].coinsRate","");
-		params.put("prpCcoinsMains_[0].id.currency","CNY");
-		params.put("prpCcoinsMains_[0].coinsAmount","");
-		params.put("prpCcoinsMains_[0].coinsPremium","");
-		params.put("prpCcoinsMains_[0].coinsPremium","");
-		params.put("iniPrpCcoins_Flag","");
-		params.put("hidden_index_ccoins","0");
-		params.put("prpCpayeeAccountBIs_[0].id.proposalNo","");
-		params.put("prpCpayeeAccountBIs_[0].id.serialNo","");
-		params.put("prpCpayeeAccountBIs_[0].itemNo","");
-		params.put("prpCpayeeAccountBIs_[0].payReason","");
-		params.put("prpCpayeeAccountBIs_[0].payeeInfoid","");
-		params.put("prpCpayeeAccountBIs_[0].accountName","");
-		params.put("prpCpayeeAccountBIs_[0].basicBankCode","");
-		params.put("prpCpayeeAccountBIs_[0].basicBankName","");
-		params.put("prpCpayeeAccountBIs_[0].recBankAreaCode","");
-		params.put("prpCpayeeAccountBIs_[0].recBankAreaName","");
-		params.put("prpCpayeeAccountBIs_[0].bankCode","");
-		params.put("prpCpayeeAccountBIs_[0].bankName","");
-		params.put("prpCpayeeAccountBIs_[0].cnaps","");
-		params.put("prpCpayeeAccountBIs_[0].accountNo","");
-		params.put("prpCpayeeAccountBIs_[0].isPrivate","");
-		params.put("prpCpayeeAccountBIs_[0].cardType","");
-		params.put("prpCpayeeAccountBIs_[0].paySumFee","");
-		params.put("prpCpayeeAccountBIs_[0].payType","");
-		params.put("prpCpayeeAccountBIs_[0].intention","支付他方保费");
-		params.put("prpCpayeeAccountBIs_[0].sendSms","");
-		params.put("prpCpayeeAccountBIs_[0].identifyType","");
-		params.put("prpCpayeeAccountBIs_[0].identifyNo","");
-		params.put("prpCpayeeAccountBIs_[0].telephone","");
-		params.put("prpCpayeeAccountBIs_[0].sendMail","");
-		params.put("prpCpayeeAccountBIs_[0].mailAddr","");
-		params.put("prpCpayeeAccountCIs_[0].id.proposalNo","");
-		params.put("prpCpayeeAccountCIs_[0].id.serialNo","");
-		params.put("prpCpayeeAccountCIs_[0].itemNo","");
-		params.put("prpCpayeeAccountCIs_[0].payReason","");
-		params.put("prpCpayeeAccountCIs_[0].payeeInfoid","");
-		params.put("prpCpayeeAccountCIs_[0].accountName","");
-		params.put("prpCpayeeAccountCIs_[0].basicBankCode","");
-		params.put("prpCpayeeAccountCIs_[0].basicBankName","");
-		params.put("prpCpayeeAccountCIs_[0].recBankAreaCode","");
-		params.put("prpCpayeeAccountCIs_[0].recBankAreaName","");
-		params.put("prpCpayeeAccountCIs_[0].bankCode","");
-		params.put("prpCpayeeAccountCIs_[0].bankName","");
-		params.put("prpCpayeeAccountCIs_[0].cnaps","");
-		params.put("prpCpayeeAccountCIs_[0].accountNo","");
-		params.put("prpCpayeeAccountCIs_[0].isPrivate","");
-		params.put("prpCpayeeAccountCIs_[0].cardType","");
-		params.put("prpCpayeeAccountCIs_[0].paySumFee","");
-		params.put("prpCpayeeAccountCIs_[0].payType","");
-		params.put("prpCpayeeAccountCIs_[0].intention","支付他方保费");
-		params.put("prpCpayeeAccountCIs_[0].sendSms","");
-		params.put("prpCpayeeAccountCIs_[0].identifyType","");
-		params.put("prpCpayeeAccountCIs_[0].identifyNo","");
-		params.put("prpCpayeeAccountCIs_[0].telephone","");
-		params.put("prpCpayeeAccountCIs_[0].sendMail","");
-		params.put("prpCpayeeAccountCIs_[0].mailAddr","");
-		params.put("iReinsCode","");
-		params.put("prpCspecialFacs_[0].reinsCode","001");
-		params.put("iFReinsCode","");
-		params.put("iPayCode","");
-		params.put("iShareRate","");
-		params.put("iCommRate","");
-		params.put("iTaxRate","");
-		params.put("iOthRate","");
-		params.put("iCommission","");
-		params.put("iOthPremium","");
-		params.put("prpCspecialFacs_[0].id.reinsNo","1");
-		params.put("prpCspecialFacs_[0].freinsCode","001");
-		params.put("prpCspecialFacs_[0].payCode","001");
-		params.put("prpCspecialFacs_[0].shareRate","001");
-		params.put("prpCspecialFacs_[0].sharePremium","001");
-		params.put("prpCspecialFacs_[0].commRate","001");
-		params.put("prpCspecialFacs_[0].taxRate","001");
-		params.put("prpCspecialFacs_[0].tax","001");
-		params.put("prpCspecialFacs_[0].othRate","001");
-		params.put("prpCspecialFacs_[0].commission","001");
-		params.put("prpCspecialFacs_[0].othPremium","001");
-		params.put("prpCspecialFacs_[0].reinsName","001");
-		params.put("prpCspecialFacs_[0].freinsName","001");
-		params.put("prpCspecialFacs_[0].payName","001");
-		params.put("prpCspecialFacs_[0].remark","001");
-		params.put("prpCspecialFacs_[0].flag","");
-		params.put("hidden_index_specialFac","0");
-		params.put("updateIndex","-1");
-		params.put("iniCspecialFac_Flag","");
-		params.put("_ReinsCode","");
-		params.put("loadFlag8","");
-		params.put("_FReinsCode","");
-		params.put("_PayCode","");
-		params.put("_ReinsName","");
-		params.put("_FReinsName","");
-		params.put("_PayName","");
-		params.put("_CommRate","");
-		params.put("_OthRate","");
-		params.put("_ShareRate","");
-		params.put("_Commission","");
-		params.put("_OthPremium","");
-		params.put("_SharePremium","");
-		params.put("_TaxRate","");
-		params.put("_Tax","");
-		params.put("_Remark","");
-		params.put("prpCsettlement.buyerUnitRank","3");
-		params.put("prpCsettlement.buyerPreFee","2364.01");
-		params.put("prpCsettlement.buyerUnitCode","");
-		params.put("prpCsettlement.buyerUnitName","");
-		params.put("prpCsettlement.upperUnitCode","");
-		params.put("upperUnitName","");
-		params.put("prpCsettlement.buyerUnitAddress","");
-		params.put("prpCsettlement.buyerLinker","");
-		params.put("prpCsettlement.buyerPhone","");
-		params.put("prpCsettlement.buyerMobile","");
-		params.put("prpCsettlement.buyerFax","");
-		params.put("prpCsettlement.buyerUnitNature","1");
-		params.put("prpCsettlement.buyerProvince","44000000");
-		params.put("buyerProvinceDes","广东分公司");
-		params.put("prpCsettlement.buyerBusinessSort","01");
-		params.put("prpCsettlement.comCname","");
-		params.put("prpCsettlement.linkerCode","");
-		params.put("linkerName","");
-		params.put("linkerPhone","");
-		params.put("linkerMobile","");
-		params.put("linkerFax","");
-		params.put("prpCsettlement.comCode","");
-		params.put("prpCsettlement.fundForm","1");
-		params.put("prpCsettlement.flag","");
-		params.put("settlement_Flag","");
-		params.put("prpCcontriutions_[0].id.serialNo","1");
-		params.put("prpCcontriutions_[0].contribType","F");
-		params.put("prpCcontriutions_[0].contribCode","");
-		params.put("prpCcontriutions_[0].contribName","");
-		params.put("prpCcontriutions_[0].contribCode_uni","");
-		params.put("prpCcontriutions_[0].contribPercent","");
-		params.put("prpCcontriutions_[0].contribPremium","");
-		params.put("prpCcontriutions_[0].remark","");
-		params.put("hidden_index_ccontriutions","0");
-		params.put("userCode","99355911");
-		params.put("iProposalNo","");
-		params.put("CProposalNo","");
-		params.put("timeFlag","");
-		params.put("prpCremarks_[0].id.proposalNo","");
-		params.put("prpCremarks_[0].id.serialNo","");
-		params.put("prpCremarks_[0].operatorCode","99355911");
-		params.put("prpCremarks_[0].remark","");
-		params.put("prpCremarks_[0].flag","");
-		params.put("prpCremarks_[0].insertTimeForHis","");
-		params.put("hidden_index_remark","0");
-		params.put("ciInsureDemandCheckVo.demandNo","");
-		params.put("ciInsureDemandCheckVo.checkQuestion","");
-		params.put("ciInsureDemandCheckVo.checkAnswer","");
-		params.put("ciInsureDemandCheckCIVo.demandNo","");
-		params.put("ciInsureDemandCheckCIVo.checkQuestion","");
-		params.put("ciInsureDemandCheckCIVo.checkAnswer","");
-		params.put("ciInsureDemandCheckVo.flag","DEMAND");
-		params.put("ciInsureDemandCheckVo.riskCode","");
-		params.put("ciInsureDemandCheckCIVo.flag","DEMAND");
-		params.put("ciInsureDemandCheckCIVo.riskCode","");
-		params.put("flagCheck","00");
+		System.out.println("quote_params_ciBI--->"+setKindItemBiCI(req));
 		return params;
+	
 	}
 	
-	//组装商业、交强险
+	//组装商业、交强险参数
 	 public Map<String,String> setKindItemBiCI(CarQuoteReq req) throws Exception{
 		 Map<String,String> params = new HashMap<String,String>();
+		 int index =0;
 		 for(CarQuoteInsItemVo item:req.getCarQuoteInsItemList()){
-			 String index = (String) RenbaoConfig.getSkindCodeMap().get(item.getKindCode());//请求报文方括号[]内索引号
-			 if(item.getCategory()==0){
-				 Map<String,String> param = RenbaoUtil.getValueByClazz1(item,getkindItemCIMap());
-				 param.put("prpCitemKindCI.kindCode",(String) RenbaoConfig.getRkindCodeMap().get(param.get("prpCitemKindCI.kindCode")));//险种代码转换
-				 params.putAll(param);
+			 if(item.getCategory()==0){//交强险
+				 params.put("prpCitemKindCI.amount",item.getInsuredAmount());//保额/限额
+				 params.put("prpCitemKindCI.kindCode",(String) RenbaoConfig.getRkindCodeMap().get(item.getKindCode()));//险种代码转换
+				 params.put("prpCitemKindCI.kindName",CarInsuranceConstant.getCarInsuranceTypeMap().get(item.getKindCode()));//险种代码转换
 				 continue;
 			 }
-			 Map<String,String> param = RenbaoUtil.getValueByClazz1(item,getkindItemBIMap(index));
-			 String specialFlag = item.getDeductibleFlag()==1?"on":"off";
-			 param.put("prpCitemKindsTemp["+index+"].specialFlag",specialFlag);//不计免赔标志
-			 param.put("prpCitemKindsTemp["+index+"].chooseFlag=","on");//购买险种标志
-			 String kindCodeKey = "prpCitemKindsTemp["+index+"].kindCode";
-			 String kindCodeValue =(String) RenbaoConfig.getRkindCodeMap().get(param.get(kindCodeKey));
-			 param.put(kindCodeKey,kindCodeValue);////险种代码替换
-			 params.putAll(param);
+			 params.putAll(getParamsTemplate(RenbaoConfig.getBiParamsMap(),index));//商业险参数模版
+			 params.putAll(getParamsTemplate((Map<String, Object>) RenbaoConfig.getSBiParamsMap().get(item.getKindCode()),index));//商业险特殊参数
+			 params.put("prpCitemKindsTemp["+index+"].specialFlag",item.getDeductibleFlag()==1?"on":"");//不计免赔标志
+			 params.put("prpCitemKindsTemp["+index+"].kindName",CarInsuranceConstant.getCarInsuranceTypeMap().get(item.getKindCode()));//购买险种标志
+			 params.put("prpCitemKindsTemp["+index+"].kindCode",(String) RenbaoConfig.getRkindCodeMap().get(item.getKindCode()));////险种代码替换
+			 params.put("prpCitemKindsTemp["+index+"].amount",item.getInsuredAmount());//保额/限额
+			 String deduCode = (String) RenbaoConfig.getRkindCodeMap().get("D"+item.getKindCode());//不计免赔险种代码
+			 params.put("relateSpecial["+index+"]",deduCode);
+			 if(item.getKindCode().equals("4")){//乘客险
+				 params.put("prpCitemKindsTemp["+index+"].unitAmount",item.getInsuredAmount());
+				 params.put("prpCitemKindsTemp["+index+"].quantity",item.getSeatNum());	
+			 }else if(item.getKindCode().equals("6")){//玻璃破粹险
+				 params.put("prpCitemKindsTemp["+index+"].modeCode","10");//玻璃类型 10国产玻璃
+			 }
+			 index = index +1;
+			 if(item.getDeductibleFlag()==1){//不计免赔
+				 params.put("prpCitemKindsTemp["+index+"].kindCode",deduCode);
+				 params.put("prpCitemKindsTemp["+index+"].kindName",CarInsuranceConstant.getCarInsuranceTypeMap().get("D"+item.getKindCode()));
+				 params.putAll(getParamsTemplate(RenbaoConfig.getDeduBiParamsMap(),index));//不计免赔险参数模版
+				 index = index+1;
+			 }
 		 }
-		 System.out.println(params);
+		 System.out.println("kind code params"+params);
 		 return params;
 	 }
-	//商业险
+	 public Map<String,String> getParamsTemplate(Map<String,Object> map,int index){
+		 Map<String,String> params = new HashMap<String,String>();
+		 for(String key:map.keySet()){
+			 params.put(key.replace("index",String.valueOf(index)),(String) map.get(key));
+		 }
+		 return params;
+	 }
+
+	/*//商业险
 	 public  Map<String,String> getkindItemBIMap(String index) throws Exception{
 		  Map<String,String> relateMap = new HashMap<String,String>();
-		  relateMap.put("kindCode", "prpCitemKindsTemp["+index+"].kindCode");//险种代码
-		  relateMap.put("kindName", "prpCitemKindsTemp["+index+"].kindName");//险种名称
-		  relateMap.put("seatNum", "prpCitemKindsTemp["+index+"].quantity");// 司机（乘客）责任险的座位数
-		  relateMap.put("insuredAmount", "prpCitemKindsTemp["+index+"].amount");//保额/限额
-		  relateMap.put("deductibleFlag", "prpCitemKindsTemp["+index+"].specialFlag");//购买不计免赔特约险标志
+		  //relateMap.put("kindCode", "prpCitemKindsTemp["+index+"].kindCode");//险种代码
+		  //relateMap.put("kindName", "prpCitemKindsTemp["+index+"].kindName");//险种名称
+		  //relateMap.put("seatNum", "prpCitemKindsTemp["+index+"].quantity");// 司机（乘客）责任险的座位数
+		  //relateMap.put("insuredAmount", "prpCitemKindsTemp["+index+"].amount");//保额/限额
+		  //relateMap.put("deductibleFlag", "prpCitemKindsTemp["+index+"].specialFlag");//购买不计免赔特约险标志
 		  return relateMap;
 	 }
 	 //交强险
@@ -1696,7 +149,7 @@ public class Quote {
 		  relateMap.put("kindName", "prpCitemKindCI.kindName");//险种名称
 		  relateMap.put("insuredAmount", "prpCitemKindCI.amount");//保额/限额
 		  return relateMap; 
-	  }
+	  }*/
 	//关系人-投保人/被保人/车主
 	public Map<String,String> SetRelatePersion(CarQuoteReq req) throws Exception{
 		Map<String,String> params = new HashMap<String,String>();
@@ -1704,11 +157,11 @@ public class Quote {
 		Map<String, String> assureRelateMap = getRelatePersionMap("2");
 		Map<String, String> ownerRelateMap = getCarOwnerMap("3");
 		Map<String,String> insureParams = RenbaoUtil.getValueByClazz1(req.getCarInsurerInfo(), insureRelateMap);
-		Map<String,String> asssureParams = RenbaoUtil.getValueByClazz1(req.getCarInsurerInfo(), assureRelateMap);
+		Map<String,String> asssureParams = RenbaoUtil.getValueByClazz1(req.getCarAssuredInfo(), assureRelateMap);
 		Map<String,String> ownerParams = RenbaoUtil.getValueByClazz1(req.getCarOwnerInfo(),ownerRelateMap);
-		insureParams.put("prpCinsureds[0].insuredFlag" , "10000000000000000000000000000A");//投保人标志
-		asssureParams.put("prpCinsureds[1].insuredFlag", "010000000000000000000000000000");//被保人标志
-		ownerParams.put("prpCinsureds[2].insuredFlag"  , "001000000000000000000000000000");//车主标志
+		insureParams.put("prpCinsureds[1].insuredFlag" , "10000000000000000000000000000A");//投保人标志
+		asssureParams.put("prpCinsureds[2].insuredFlag", "010000000000000000000000000000");//被保人标志
+		ownerParams.put("prpCinsureds[3].insuredFlag"  , "001000000000000000000000000000");//车主标志
 		params.putAll(insureParams);
 		params.putAll(asssureParams);
 		params.putAll(ownerParams);
@@ -1775,6 +228,179 @@ public class Quote {
 		Map<String,String> params = RenbaoUtil.getValueByClazz1(req.getCarLicenseInfo(), relateMap);
 		return params;
 	}
-	
+	//封装报价结果
+    public CarQuoteRes getResQuote(CarQuoteReq carQuoteReq,RenbaoQuoteContent quoteContent){
+		CarQuoteRes qRes = getQuote(quoteContent);
+		qRes.setMerchantOrderId(carQuoteReq.getMerchantOrderId());
+		if (qRes.getCarQuoteInfo() == null) {
+			CarQuoteInfoVo infoVo = new CarQuoteInfoVo();
+			qRes.setCarQuoteInfo(infoVo);
+			infoVo.setInsurerId(carQuoteReq.getInsurerId() == null ? "" : carQuoteReq.getInsurerId());
+			infoVo.setCompanyType(carQuoteReq.getCompanyType());
+			infoVo.setQuoteNo(carQuoteReq.getQuoteNo());
+		} else {
+			qRes.getCarQuoteInfo().setInsurerId(carQuoteReq.getInsurerId() == null ? "" : carQuoteReq.getInsurerId());
+			qRes.getCarQuoteInfo().setCompanyType(carQuoteReq.getCompanyType());
+			qRes.getCarQuoteInfo().setQuoteNo(carQuoteReq.getQuoteNo());// 报价编号
+		}
+		
+		qRes.setOrderId(carQuoteReq.getOrderId());// 订单编号
+		return qRes;
+	}
+    
+	public CarQuoteRes getQuote(RenbaoQuoteContent resContent) {
+		CarQuoteRes res = new CarQuoteRes();
+		if(resContent==null){
+			res.getHeader().setResCode("11000");
+			res.getHeader().setResMsg("解析报文失败!");
+			return res;
+		}else if(resContent.getTotalRecords().equals("0")){
+			res.getHeader().setResCode("11000");
+			res.getHeader().setResMsg(resContent.getMsg());
+			return res;
+		}else if(resContent.getTotalRecords().equals("1")&&!"".equals(StringUtil.nullToString(resContent.getData().get(0).getErrMessage()))){
+			res.getHeader().setResCode("11000");
+			res.getHeader().setResMsg(resContent.getData().get(0).getErrMessage());
+			return res;
+		}else if(resContent.getData().get(0).getBiInsuredemandVoList()==null||resContent.getData().get(0).getBiInsuredemandVoList().size()!=1){
+			res.getHeader().setResCode("11000");
+			res.getHeader().setResMsg("报价失败!");
+			return res;
+		}else if(!"".equals(resContent.getData().get(0).getBiInsuredemandVoList().get(0).getCiInsureDemandDAA().getRemark())){
+			res.getHeader().setResCode("11000");
+			res.getHeader().setResMsg(resContent.getData().get(0).getBiInsuredemandVoList().get(0).getCiInsureDemandDAA().getRemark());
+			return res;
+		}else{
+			res.setOrderId("");// 为空
+			res.getHeader().setResCode("0000");
+			res.getHeader().setResMsg("成功!");
+			res.setRemark("");
+			// 报价失败直接返回
+			if ("11000".equals(res.getHeader().getResCode()))
+				return res;
 
+			CarQuoteInfoVo info = new CarQuoteInfoVo();
+			res.setCarQuoteInfo(info);
+
+			info.setQuoteNo("");// 暂空
+			info.setOrderId("");// 暂空
+			info.setInsurerName("");// 暂空
+			info.setCompanyType("");// 保险公司
+			info.setSumStdPrem("");//标准保费
+			info.setSumPayTax("");//车船税总缴付税额
+			info.setTaxType("");// 可空
+			info.setThisPayTax("0");// 可空
+			info.setPrePayTax("0");// 可空
+			info.setDelayPayTax("0");// 可空
+			info.setSumPayablePrem("");//应交保费，不含车船税
+
+			//info.setSumPayAmount();//应付金额，应交保费 + 车船税总额
+			//Map<String,String> nameValue = HuaanUtil.getResContentValues(content);
+			
+			/*info.setThisPayTax(String.valueOf(jqTax));//车船税当年应缴
+			info.setSumPayablePrem(String.valueOf(syPremimum+jqPremimum));//应交保费，不含车船税
+			info.setSumPayAmount(syPremimum+jqPremimum+jqTax);//应付金额，应交保费 + 车船税总额
+			info.setSumCiPremium(jqPremimum+jqTax);//交强险应付保费(含税)
+			info.setSumBiPremium(syPremimum);//商业险应付保费
+			info.setSumInsured(String.valueOf(syInsured+jqInsured));//总保额 = 商业+交强
+			info.setActualValue(nameValue.get("Vhl.NActualValue"));// 车辆实际价值
+*/			
+			List<CarQuoteInsItemVo> insItemList = getCarItemList(resContent,res);
+			info.setCarQuoteInsItemList(insItemList);//险种明细
+		}
+		return res;
+	}
+	/**
+	 * @Description: TODO(封装交强险、商业险)
+	 * @param resContent 报文对象
+	 * @return 险种列表
+	 * @author yejie.huang
+	 * @date 2016年11月23日 下午4:39:20
+	 */
+	public List<CarQuoteInsItemVo> getCarItemList(RenbaoQuoteContent resContent,CarQuoteRes res){
+		List<PrpCitemKind> cCiBiItems = new ArrayList<PrpCitemKind>();
+		CiCarShipTax carShipTax = null;
+		CiInsureDemand ciInsureDemand = null;
+		//cCiBiItems.addAll(resContent.getData().get(0).getBiInsuredemandVoList());
+		//cCiBiItems.addAll(resContent.getData().get(0).getCiInsureVOList());
+		List<RenbaoBiInsure> cBiItems = resContent.getData().get(0).getBiInsuredemandVoList();
+		List<RenbaoBiInsure> cCiItems = resContent.getData().get(0).getCiInsureVOList();
+		if(cBiItems!=null&&cBiItems.size()==1)
+			cCiBiItems.addAll(cBiItems.get(0).getPrpCitemKinds());//交强险
+		if(cCiItems!=null&&cCiItems.size()==1){
+			cCiBiItems.addAll(cCiItems.get(0).getPrpCitemKinds());//商业险
+			carShipTax = cCiItems.get(0).getCiCarShipTax();
+			ciInsureDemand= cCiItems.get(0).getCiInsureDemand();
+		}
+		return getItems(carShipTax,ciInsureDemand,cCiBiItems,res);
+	}
+	/**
+	 * @Description: TODO(封装险种)
+	 * @param carShipTax 返回报文车船税对象
+	 * @param ciInsureDemand 返回报文交强信息，交强特有对象（标准保费、应交保费属性）
+	 * @param ciBiItems 商业险、交强险（保额属性）列表
+	 * @author yejie.huang
+	 * @date 2016年11月24日 上午9:28:15
+	 */
+	public List<CarQuoteInsItemVo> getItems(CiCarShipTax carShipTax,CiInsureDemand ciInsureDemand,List<PrpCitemKind> ciBiItems,CarQuoteRes res){
+		List<CarQuoteInsItemVo> items = new ArrayList<CarQuoteInsItemVo>();
+		BigDecimal sumInsured=new BigDecimal("0"),sumStdPrem=new BigDecimal("0"),biPremium=new BigDecimal("0"),ciPremium=new BigDecimal("0"),sumTax=new BigDecimal("0");
+		for(PrpCitemKind cItem :ciBiItems){
+			CarQuoteInsItemVo item = new CarQuoteInsItemVo();
+			String kindCode = (String) RenbaoConfig.getKindCodeMap().get(cItem.getKindCode());
+			int category = 1;
+			String benchmarkPremium = cItem.getBenchMarkPremium();
+			String premium = cItem.getPremium();
+			String amount = cItem.getAmount();
+			if("10".equals(kindCode)){//交强险从CiInsureDemand对象获取标准保费、应交保费
+				category=0;
+				benchmarkPremium = ciInsureDemand.getBenchMarkPremium();
+				premium = ciInsureDemand.getPremium();
+			}else if("4".equals(kindCode)){//乘客座位险保额=座位X单个保额
+				 if(ValidatorUtil.isNumeric(amount)&&ValidatorUtil.isNumeric(cItem.getQuantity())){
+					 amount = new BigDecimal(amount).multiply(new BigDecimal(cItem.getQuantity())).toString();
+				 }else{
+					 amount = "0";
+				 }
+			}
+			item.setCategory(category);
+			item.setSeatNum(cItem.getQuantity());
+			//item.setDeductibleFlag(0);
+			item.setKindCode(kindCode);
+			item.setKindName(CarInsuranceConstant.getCarInsuranceTypeMap().get(kindCode));
+			item.setBenchmarkPremium(benchmarkPremium);
+			item.setDiscount(cItem.getDisCount());
+			item.setInsuredAmount(amount);
+			item.setPremium(premium);
+			items.add(item);
+			
+			/**
+			 * 计算总保额、总标准保费、总应交保费，人保系统没有直接返回总和
+			 */
+			if(ValidatorUtil.isNumeric(cItem.getAmount()))
+				 sumInsured = sumInsured.add(new BigDecimal(amount));
+			  if(ValidatorUtil.isNumeric(benchmarkPremium))
+				  sumStdPrem = sumStdPrem.add(new BigDecimal(benchmarkPremium));
+			  if(ValidatorUtil.isNumeric(cItem.getTaxPremium()))
+				  sumTax = sumTax.add(new BigDecimal(cItem.getTaxPremium()));
+			  if(ValidatorUtil.isNumeric(premium)&&item.getCategory()==1){
+				  biPremium = biPremium.add(new BigDecimal(premium));
+			  }else if(ValidatorUtil.isNumeric(premium)&&item.getCategory()==0){
+				  ciPremium = ciPremium.add(new BigDecimal(premium));
+			  }
+		}
+	  res.getCarQuoteInfo().setSumInsured(String.valueOf(sumInsured));
+	  res.getCarQuoteInfo().setSumStdPrem(String.valueOf(sumStdPrem));
+	  res.getCarQuoteInfo().setSumBiPremium(biPremium.doubleValue());
+	  res.getCarQuoteInfo().setSumCiPremium(ciPremium.doubleValue());
+	  res.getCarQuoteInfo().setSumPayTax(String.valueOf(sumTax));
+	  BigDecimal sumPayAmount = biPremium.add(ciPremium);
+	  res.getCarQuoteInfo().setSumPayAmount(sumPayAmount.doubleValue());
+	  if(carShipTax!=null){//车船税
+		  res.getCarQuoteInfo().setThisPayTax(carShipTax.getThisPayTax());
+		  res.getCarQuoteInfo().setDelayPayTax(carShipTax.getDelayPayTax());
+		  res.getCarQuoteInfo().setPrePayTax(carShipTax.getPrePayTax());
+	  }
+	  return items;
+	}
 }
