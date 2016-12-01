@@ -316,7 +316,7 @@ public class RenBaoLoginA {
         
         Map<String,String> loginParams=new HashMap<String, String>();
         loginParams.put("username", userCode);
-        loginParams.put("password", "hrl955188");
+        loginParams.put("password", "hrl955189");
         loginParams.put("loginMethod", "nameAndPwd");
         loginParams.put("rememberFlag", "0");
         loginParams.put("lt",el2.attr("value"));
