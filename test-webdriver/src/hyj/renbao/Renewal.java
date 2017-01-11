@@ -124,7 +124,7 @@ public class Renewal {
   /**
    * @Description: TODO(取最大未出险年份保单号)
    * @date 2016年11月15日 上午9:42:28
-   */
+   *//*
   public void setPolicyNoByYear(RenbaoRenewalData CiBiData,RenbaoRenewalData data){
 	  if("DZA".equals(CiBiData.getRiskCode())){
 		  if(CiBiData.getPolicyNo()==null){
@@ -155,7 +155,7 @@ public class Renewal {
 	  }
   }
   
- /* *//**
+  *//**
    * @Description: TODO(封装续保结果)
    * @param res 请求对象
    * @param cookie 
@@ -489,5 +489,5 @@ public class Renewal {
 	  double sumPayAmount = res.getLastCarQuoteInfo().getSumBiPremium()+res.getLastCarQuoteInfo().getSumCiPremium();
 	  res.getLastCarQuoteInfo().setSumPayAmount(sumPayAmount);
 	  return res;
-  }*/
-}
+  }
+*/}

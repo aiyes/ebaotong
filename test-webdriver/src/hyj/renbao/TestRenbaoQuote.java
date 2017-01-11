@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import org.apache.commons.collections.bag.SynchronizedSortedBag;
 import org.junit.Test;
 
+import com.alibaba.fastjson.JSON;
 import com.ebtins.dto.open.CarLicenseInfoVo;
 import com.ebtins.dto.open.CarModelInfoVo;
 import com.ebtins.dto.open.CarOrderRelationInfoVo;
@@ -21,8 +22,11 @@ import com.ebtins.dto.open.CarOwnerInfoVo;
 import com.ebtins.dto.open.CarQuoteInsItemVo;
 import com.ebtins.dto.open.CarQuoteReq;
 import com.ebtins.dto.open.CarQuoteRes;
+import com.ebtins.open.common.constant.CommonConstants;
 
 import ebtins.smart.proxy.company.renbao.util.RenbaoConfig;
+import ebtins.smart.proxy.controller.VerifyInput;
+import ebtins.smart.proxy.util.ResultBuilder;
 import huaan.quote.util.StringUtil;
 
 public class TestRenbaoQuote {
@@ -52,6 +56,14 @@ public class TestRenbaoQuote {
 	public void test() throws Exception {
 		Quote renbaoQuote = new Quote();
 		CarQuoteReq req = getCarReq();
+		req.setCompanyType(CommonConstants.COM_TYPE_RENBAO);
+		String  error = VerifyInput.verifyQuoteReq(req);
+		
+		if(org.apache.commons.lang3.StringUtils.isNotBlank(error)){
+		     System.out.println(JSON.toJSONString(ResultBuilder.returnQuoteRes(req, error)));
+			return;
+		}
+		
 		CarQuoteRes res = renbaoQuote.getQuote(req);
 		System.out.println("getSumInsured:"+res.getCarQuoteInfo().getSumInsured());
 		System.out.println("getSumPayAmount:"+res.getCarQuoteInfo().getSumPayAmount());
@@ -62,6 +74,8 @@ public class TestRenbaoQuote {
 		for(CarQuoteInsItemVo item :res.getCarQuoteInfo().getCarQuoteInsItemList()){
 			System.out.println(item.getKindName()+" amount:"+item.getInsuredAmount()+" benchPreminum:"+item.getBenchmarkPremium()+" preminu:"+item.getPremium());
 		}
+		System.out.println(JSON.toJSONString(res));
+		System.out.println(res.getHeader().getResMsg());
 	}
 	/*@Test
 	public void testSave() throws Exception {
@@ -113,8 +127,8 @@ public class TestRenbaoQuote {
 		modelInfo.setTonCount("");
 		modelInfo.setExhaustScale("1.997");//排量----exhaustScale 排气量
 		modelInfo.setFullWeight("1505");
-		modelInfo.setCountryNature("01");
-		modelInfo.setCarVehicleType("A01");//车辆种类----carVehicleType 车辆种类:1为客车，2为货车，3为特种车
+		modelInfo.setCountryNature("01");//无需转换，人保和乐宝同
+		modelInfo.setCarVehicleType("1");//车辆种类----carVehicleType 车辆种类:1为客车，2为货车，3为特种车--已转换1 2
 		modelInfo.setRemark("");
 		
 		//行驶证及相关行驶信息
@@ -128,9 +142,9 @@ public class TestRenbaoQuote {
 		licenInfo.setChgOwnerDate("");//过户日期
 		//licenInfo.setOwnerNature("");//行驶证车主性质
 		//licenInfo.setCustomerType("");//所有人性质
-		licenInfo.setUseNature(211);//车辆使用性质   1运营，2非运营，默认为2
+		licenInfo.setUseNature(2);//车辆使用性质   1运营，2非运营，默认为2
 		//licenInfo.setCountryNature("0");//国别性质
-		licenInfo.setLicenseType("02");//号牌种类
+		licenInfo.setLicenseType("02");//号牌种类  号牌种类：01为大型车，02为小型车，16为教练汽车，22为临时行驶车，默认为02--无需转换，人保和乐宝同
 		licenInfo.setNonLocalFlag(0);//是否外地车
 		//licenInfo.setCustomerType("01");//所有人性质:： 01-个人，02-机关，03-企业，默认为01
 		//licenInfo.setChgOwnerFlag("0");//过户车标志
@@ -268,15 +282,15 @@ public class TestRenbaoQuote {
 		//车主基本信息
 		CarOwnerInfoVo ownerInfo = new CarOwnerInfoVo();
 		req.setCarOwnerInfo(ownerInfo);
-		ownerInfo.setCarOwner("张力");//车主姓名
+		ownerInfo.setCarOwner("周世杰");//车主姓名
 		ownerInfo.setOwnerPhone("18927416110");//车主手机号码
 		ownerInfo.setOwnerIdType("01");//车主证件类型
-		ownerInfo.setOwnerIdentifyNumber("640121198203050271");//车主证件号码
-		ownerInfo.setOwnerAddr("");//车主详细地址信息
+		ownerInfo.setOwnerIdentifyNumber("421125199103184010");//车主证件号码
+		ownerInfo.setOwnerAddr("深圳");//车主详细地址信息
 		ownerInfo.setOwnerSex(1);
 		ownerInfo.setOwnerAge(34);
 		
-		//投保人
+		//投保人440303197908041347
 		CarOrderRelationInfoVo ri1 = new CarOrderRelationInfoVo();
 		ri1.setRelationType(1);
 		ri1.setName("张力行");
@@ -285,7 +299,7 @@ public class TestRenbaoQuote {
 		ri1.setIdType("01");
 		ri1.setIdNo("440303198908041317");
 		ri1.setTelePhone("13530108337");
-		ri1.setMobilePhone("");
+		ri1.setMobilePhone("13530108337");
 		ri1.setAddress("广东省深圳市罗湖区清水河");
 		ri1.setPostCode("");
 		req.setCarInsurerInfo(ri1);
@@ -305,7 +319,7 @@ public class TestRenbaoQuote {
 		req.setCarAssuredInfo(ri2);
 		return req;
 	}
-	
+
 	@Test
 	public void processContent() throws Exception{
 		Quote q = new Quote();
@@ -332,7 +346,9 @@ public class TestRenbaoQuote {
 	}
 	@Test
 	public void generateCode() throws Exception{
-		String newstr = StringUtil.urlDeCode(refreshByTime, "gbk");
+		String ss = "RiskCode=0511&ComCode=44031573&StandardName=%CE%E5%C1%E2LZW6407BAF%BF%CD%B3%B5&StandardNameTemp=%CE%E5%C1%E2LZW6407BAF%BF%CD%B3%B5&SearchCode=&SearchCodeTemp=&CompanyName=&strCompanyNameTemp=&BrandName=&BrandNameTemp=&FamilyName=&FamilyNameTemp=&VINCode=&VINCodeTemp=&RBCode=&RBCodeTemp=&ImportFlag=-1&ImportFlagTemp=-1&VehicleClass=-1&VehicleClassTemp=-1&PageNum=1&PageCount=1&SpuerWherePart=1%3D1+and+%28StandardName+like+%27%25%CE%E5%C1%E2%25%27+and+StandardName+like+%27%25%BF%CD%B3%B5%25%27+and+StandardName+like+%27%256407%25%27+and+upper%28StandardName%29++like+%27%25LZW%25%27+and+upper%28StandardName%29++like+%27%25BAF%25%27+or+%281%3D1++and+VehicleAlias+like+%27%25%CE%E5%C1%E2%25%27+and+VehicleAlias+like+%27%25%BF%CD%B3%B5%25%27+and+VehicleAlias+like+%27%256407%25%27+and+upper%28VehicleAlias%29++like+%27%25LZW%25%27+and+upper%28VehicleAlias%29++like+%27%25BAF%25%27%29%29+Order+By+BrandName%2Cmarketdate%2CPurchasePrice+&Personal=1";
+		String calContent = "struts.token.name=token&token=PPT0LPJWHX8IG42UDQ8HE355X8I2A6OG&syscode=prpall&checkFlag=&prpDcustomerPerson.validStatus=1&prpDcustomerPerson.customerCode=&prpDcustomerPerson.versionNo=0&prpDcustomerPerson.customerCName=%C5%ED%BF%AA%C1%D6&prpDcustomerPerson.customerFullEName=&prpDcustomerPerson.identifyType=01&prpDcustomerPerson.identifyNumber=520203198905015839&prpDcustomerPerson.gender=1&prpDcustomerPerson.birthDate=1989-05-01&prpDcustomerPerson.nationality=CHN&prpDcustomerPerson.dateValid=2025-12-17&prpDcustomerPerson.resident=A&prpDcustomerRisk.creditLevel=3&prpDcustomerPerson.marriage=&prpDcustomerPerson.favourite=&prpDcustomerPerson.educationCode=&prpDcustomerPerson.health=&prpDcustomerPerson.stature=&prpDcustomerPerson.weight=&prpDcustomerPerson.bloodType=&prpDcustomerPerson.deathDate=&prpDcustomerPerson.customerKind=&prpDcustomerPerson.auditType=%D0%C2%D4%F6&prpDcustomerPerson.submitDescription=%09%09%09%09%09%09%09%09%0D%0A%09%09%09%09%09%09%09&PhonePersonNo=1&phoneNumber1=&phoneType2=&bondingDate=&bondingReason=&bondingPerson=&bondingOrganization=&bondingApply=&removebondingApply=&bondingFlag=&phoneType=1&phoneNumber=15296281584&phoneproperties=01&customerRelations=&bestRelationDT=&phonevalidstatus=1&isDefault=0&PhonePersonNo=&phoneNumber1=&phoneType2=&bondingDate=&bondingReason=&bondingPerson=&bondingOrganization=&bondingApply=&removebondingApply=&bondingFlag=&phoneType=1&phoneNumber=&phoneproperties=01&customerRelations=&bestRelationDT=&phonevalidstatus=1&isDefault=&AddressPersonNo=1&adresstype=1&province=520000++++++++++++++++++++++++&city=520200++++++++++++++++++++++++&area=520203++++++++++++++++++++++++&addresscname=%C1%D6%B3%A1%B4%E5&addressename=&postcode=&addressvalidstatus=1&isAddressDefault=0&AddressPersonNo=&adresstype=1&province=&city=&area=&addresscname=&addressename=&postcode=&addressvalidstatus=1&isAddressDefault=&prpDcustomerPerson.email=&prpDcustomerPerson.imType=&prpDcustomerPerson.imNo=&prpDcustomerPerson.weiChat=&prpDcustomerPerson.qq=&prpDcustomerPerson.selfMonthIncome=&prpDcustomerPerson.selfMonthIncomeCurrency=CNY&prpDcustomerPerson.familyMonthIncome=&prpDcustomerPerson.familyMonthIncomeCurrency=CNY&FamliyPersonNo=&relationType1=&name1=&birthDate1=&identifyNumber1=&unit1=&duty1=&phoneType1=&phone1=&AccountPersonNo=&bank=&bankView=&branchBank=&account=&accountType=&accountvaildstatus=1&mainAccountValid=&UnitPersonNo=&unitType=&unit=&unitAddress=&occupationCode=&occupationCodeView=&dutyLevel=&dutyStatus=&prpDcustomerPerson.agriFlag=0&prpDcstprf.comCitycode=&prpDcstprf.comCountycode=&prpDcstprf.salsDepartcode=&prpDcstprf.serStationcode=&prpDcstprf.serPointcode=&prpDcstprf.famliyMembersno=&prpDcstprf.ageLt18no=&prpDcstprf.ageGt65no=&prpDcstprf.cultivatedLand=&prpDcstprf.workerQuantity=&prpDcstprf.woodLand=&prpDcstprf.pigNum=&prpDcstprf.cattleNum=&prpDcstprf.sheepNum=&prpDcstprf.otherNum=&prpDcstprf.bankNo=&prpDcstprf.accountName=&prpDcstprf.bankName=&prpDcstprf.householdIncome=&prpDcstprf.houseNum=&prpDcstprf.buildStructure=&prpDcstprf.liaisonmanCode=&prpDcstprf.describes=&CarPersonNo=&licenseNo=&vehicleName=&engineNo=&vinNo=&enrollDate=&policyEndDate=&insureCompany=";
+		String newstr = StringUtil.urlDeCode(ss, "gbk");
 		//newstr = replaceDuplicate(newstr,getDumplicateStr(queryPayFor));
 		String[] params = newstr.split("&");
 		int count =0;

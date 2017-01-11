@@ -31,7 +31,7 @@ import hyj.login.RenBaoLoginA;
  *
  */
 
-public class QueryModel {
+public class QueryModel {/*
 	
 	public static CarModelRes queryCarModel(CarModelReq req) throws Exception{
 		CarModelRes res = new CarModelRes();
@@ -105,7 +105,7 @@ public class QueryModel {
 		res.getHeader().setResMsg("成功");
 		System.out.println("res-->"+JSON.toJSONString(res));
 		return res;
-		/*Map<String,String> relateMap = new HashMap<String,String>();
+		Map<String,String> relateMap = new HashMap<String,String>();
 		relateMap.put("modelCode", "vehicleId");//车型代码
 		relateMap.put("brandName", "vehicleName");//车型名称(品牌型号)  brandId-品牌型号
 		relateMap.put("factory", "vehicleMakerId");//生产厂家--厂商代码？
@@ -132,7 +132,7 @@ public class QueryModel {
 		relateMap.put("externalId", "");//第三方车型编号，如乐宝吧车型ID
 		relateMap.put("description", "");//车型简要描述，需要按一定的顺序进行拼接
 		relateMap.put("remark", "");//备注
-		*/
+		
 	}
 
-}
+*/}

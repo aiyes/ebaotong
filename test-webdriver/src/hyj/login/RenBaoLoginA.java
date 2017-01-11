@@ -31,6 +31,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -41,6 +42,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 
 import com.alibaba.fastjson.JSON;
+
+import ebtins.smart.proxy.company.renbao.dto.RelatePeronContent;
+import ebtins.smart.proxy.company.renbao.util.RenbaoClientSSLUtil;
 
 public class RenBaoLoginA {
 	public static String SERVER ="10.0.62.165";
@@ -104,9 +108,10 @@ public class RenBaoLoginA {
 		    	
 		    //设置header信息  
 		    //指定报文头【Content-type】、【User-Agent】
-		    httpGet.setHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)");  
+		    //httpGet.setHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)");  
+		    httpGet.setHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729)");  
 		    httpGet.setHeader("Proxy-Connection","Keep-Alive");
-		    httpGet.setHeader("Host","10.134.130.208");
+		    httpGet.setHeader("Host","10.134.130.208:8300");
 		    httpGet.setHeader("Accept","application/x-ms-application, image/jpeg, application/xaml+xml, image/gif, image/pjpeg, application/x-ms-xbap, */*");
 		    httpGet.setHeader("Referer",referUrl);
 		    httpGet.setHeader("Accept-Language","zh-CN");
@@ -120,24 +125,11 @@ public class RenBaoLoginA {
 		                 for (int i = 0; i < cks.size(); i++) {
 		                 	outCookies.put(cks.get(i).getName(),cks.get(i).getValue());
 		                 }
-		                 System.out.println("outCookies："+outCookies);
+		                 System.out.println("get outCookies："+outCookies);
 		 			}
 		    //获取结果实体  
 		    HttpEntity entity = response.getEntity();  
-		    System.out.println("返回："+response.getStatusLine());
-		    
-		    Header[] headers = response.getAllHeaders();
-		    System.out.println(JSON.toJSONString(headers));
-		    System.out.println(headers.length);
-		    String jsseionid = "";
-		    for(Header h :headers){
-		    	System.out.println(JSON.toJSONString(h.getElements()));
-		    	for(HeaderElement el : h.getElements()){
-		    		System.out.println(el.getValue());
-		    	}
-		    		
-		    }
-		    System.out.println("jsseionid-->"+jsseionid);
+		    System.out.println("get返回："+response.getStatusLine());
 		    if (entity != null) {  
 		        //按指定编码转换结果实体为String类型  
 		        body = EntityUtils.toString(entity, encoding);
@@ -149,9 +141,8 @@ public class RenBaoLoginA {
 		    return body;  
 	}  
 	
-	
-	
-	public static String post(String url, Map<String,String> map,String encoding,String cookies,String referer) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException {  
+	public static String post(String url, Map<String,String> map,String encoding,String cookies,String referer,
+			Map<String, String> outCookies) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException {  
 		 String body = "";  
 		    //采用绕过验证的方式处理https请求  
 		    SSLContext sslcontext = createIgnoreVerifySSL();  
@@ -169,7 +160,8 @@ public class RenBaoLoginA {
 		    		.setProxy(new HttpHost(SERVER,808))
 		    		.setConnectionManager(connManager).build();  
 		//      CloseableHttpClient client = HttpClients.createDefault();  
-		      
+		    
+			//System.out.println("cookie testtt"+JSON.toJSONString(((AbstractHttpClient) client).getCookieStore().getCookies()));
 		    //创建post方式请求对象  
 		    HttpPost httpPost = new HttpPost(url);
 		    if(cookies!=null) httpPost.setHeader("Cookie", cookies);
@@ -192,12 +184,29 @@ public class RenBaoLoginA {
 		    //指定报文头【Content-type】、【User-Agent】  
 		    httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");  
 		    httpPost.setHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729)");  
-		    httpPost.setHeader("Host","10.134.130.208:8888"); 
+		    httpPost.setHeader("Host","10.134.130.208:8300"); 
+		    
+		    
+		    CookieStore cookieStore = new BasicCookieStore();			
+			HttpClientContext localContext = HttpClientContext.create();
+			localContext.setCookieStore(cookieStore);
+		    
+		    
 		    //执行请求操作，并拿到结果（同步阻塞）  
-		    CloseableHttpResponse response = client.execute(httpPost);  
+		    CloseableHttpResponse response = client.execute(httpPost,localContext);  
+		    //getResu(response,outCookies);
+		    
+		 // 如果需要输出cookie
+ 			if(outCookies!=null){
+ 				List<Cookie> cks = cookieStore.getCookies();					
+                 for (int i = 0; i < cks.size(); i++) {
+                 	outCookies.put(cks.get(i).getName(),cks.get(i).getValue());
+                 }
+                 System.out.println("post outCookies："+outCookies);
+ 			}
 		    //获取结果实体  
 		    HttpEntity entity = response.getEntity();  
-		    System.out.println("返回："+response.getStatusLine());
+		    System.out.println("post返回："+response.getStatusLine());
 		    if (entity != null) {  
 		        //按指定编码转换结果实体为String类型  
 		        body = EntityUtils.toString(entity, encoding);
@@ -208,7 +217,20 @@ public class RenBaoLoginA {
 		    response.close();  
 		    return body;  
 	}  
-	
+	/*public static void getResu(CloseableHttpResponse response,Map<String,String> outCookie){
+		Header[] hs = response.getAllHeaders();
+		for(Header h :hs){
+			HeaderElement[] hes =  h.getElements();
+			for(HeaderElement he:hes){
+				System.out.println(JSON.toJSONString(he));
+				if(outCookie!=null&&(he.getName().equals("BOCINS_cif_Cookie")||he.getName().equals("CASTGC"))){
+					outCookie.put(he.getName(), he.getValue());
+					break;
+				}
+			}
+		}
+	}
+	*/
 	public static String toCookiesStr(Map<String, String> outCookies){
 		StringBuffer sb= new StringBuffer();
 		for(Entry<String, String> et :outCookies.entrySet()){
@@ -216,96 +238,12 @@ public class RenBaoLoginA {
 		}
 		return sb.substring(0, sb.length()-1);
 	}
-    public static void main(String[] args) throws Exception {
-    	//String url = "http://10.134.130.208/portal/index.jsp?calogin";
-    	String url = "http://10.134.130.208:8000/prpall/?calogin";
-    	String UTF8="utf-8";
-    	Map<String, String> outCookies =new HashMap<String, String>();
-    	String body1 = get(url,UTF8,null,null,outCookies); 
-    	//System.out.println(body1);
-    	String userCode ="1299010766";
-        org.jsoup.nodes.Document  doc =Jsoup.parse(body1);
-        Elements el1 =doc.select("form[id=fm]");
-        Elements el2 =doc.select("input[name=lt]");
-        String jsessionid = el1.get(0).attr("action").split(";")[1];
-        jsessionid = jsessionid.substring(jsessionid.indexOf("=")+1, jsessionid.indexOf("?"));
-        String cookies ="prpall="+userCode+";"+"JSESSIONID="+jsessionid+";";
-        
-        Map<String,String> loginParams=new HashMap<String, String>();
-        loginParams.put("username", userCode);
-        loginParams.put("password", "hrl955188");
-        loginParams.put("loginMethod", "nameAndPwd");
-        
-        loginParams.put("rememberFlag", "0");
-        loginParams.put("lt",el2.attr("value"));
-        loginParams.put("key", "yes");
-        loginParams.put("_eventId", "submit");
-        loginParams.put("userMac", "50:E5:49:2F:1D:B9");
-        loginParams.put("button.x", "44");
-        loginParams.put("button.y", "6");
-        loginParams.put("errorKey", "null");
-        
-        String loginUrl="https://10.134.130.208:8888"+el1.get(0).attr("action");
-        String body2 = post(loginUrl,loginParams, UTF8,cookies,url);
-        System.out.println("-------------------body2---------");
-        System.out.println(body2);
-    	
-    	
-        String ticketText = Jsoup.parse(body2).select("a").text();
-        String ticket = ticketText.substring(ticketText.lastIndexOf("=")+1);
-        
-        
-        System.out.println(body2);
-        System.out.println("cookies-->"+cookies);
-        System.out.println("loginUrl-->"+loginUrl);
-        
-        String homePageUrl = "http://10.134.130.208:8000/prpall/index.jsp?calogin&ticket="+ticket;
-        //String homePageUrl = "http://10.134.130.208:8000/prpall/menu/showMenu.do?systemCode=prpall&userCode=99355911";
-        System.out.println("homePageUrl-->"+homePageUrl);
-        outCookies =new HashMap<String, String>();
-        String body3 = get(homePageUrl,UTF8,"JSESSIONID="+jsessionid+";",null,outCookies);
-        System.out.println("首页--》"+body3);
-        //System.out.println(el1.get(0).attr("action").split(";")[1]);
-        //System.out.println("jsessionid-->"+jsessionid);
-        
-        String modelCookie ="JSESSIONID="+jsessionid+";"+toCookiesStr(outCookies);
-        
-        String modelUrl="http://10.134.130.208:8000/prpall/vehicle/vehicleQuery.do?pageSize=10&pageNo=1";
-        String modelRefUrl="http://10.134.130.208:8000/prpall/vehicle/prepareQuery.do?brandName=别克SGM6511GL8旅行车&riskCode=DAA";
-        
-        //String modelCookie="JSESSIONID=Qm4bYcfWvTxJDtzDQ3GB9WJx4Lw5s5LMmGpvh449QRbQwMsg1NBL!-2025148054; BOCINS_prpall_Cookie=m6b1YcfJMZnynstzQYLxQydVvClq9q967s7xhwQSv2DntrRJL6L5!558893426";        
-        Map<String, String> params=new HashMap<String, String>();
-		params.put("brandName", "别克SGM6511GL8旅行车");
-		params.put("carShipTaxPlatFormFlag", "");
-		params.put("comCode", "44030700");
-		params.put("jumpToPage", "1");
-		params.put("pageNo_", "1");
-		params.put("pageSize_", "20");
-		params.put("pm_vehicle_switch", "");
-		params.put("quotationFlag", "");
-		params.put("riskCode", "DAA");
-		params.put("taxFlag", "");
-		params.put("TCVehicleVO.brandId", "");
-		params.put("TCVehicleVO.brandName", "");
-		params.put("TCVehicleVO.searchCode", "");
-		params.put("TCVehicleVO.vehicleAlias", "");
-		params.put("TCVehicleVO.vehicleId", "");
-		params.put("TCVehicleVO.vehicleName", "别克SGM6511GL8旅行车");
-		params.put("totalRecords_", "");
-		String body =post(modelUrl, params,"GBK",modelCookie,modelRefUrl);
-		System.out.println(body);
-		
-		/*String itemKindRefer = "http://10.134.130.208:8000/prpall/business/browsePolicyNo.do?bizNo=PDAA201544030000039763";
-		//String itemKindUrl = "http://10.134.130.208:8000/prpall/business/showCitemKind.do?editType=SHOW_POLICY&bizType=POLICY&bizNo=PDAA201544030000039763&riskCode=DAA&minusFlag=&contractNo=&comCode=44030716&originQuery=&proposalNo=TDAA201544030000056414&rnd614=Mon Nov 7 13:44:34 UTC+0800 2016";
-		String itemKindUrl = "http://10.134.130.208:8000/prpall/business/showCitemKind.do?editType=SHOW_POLICY&bizType=POLICY&bizNo=PDAA201544030000039763&riskCode=DAA&minusFlag=&contractNo=%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&comCode=44030716&originQuery=&proposalNo=TDAA201544030000056414&rnd614=Mon%20Nov%207%2013:44:34%20UTC+0800%202016";
-		String itemKinddbody =get(itemKindUrl,UTF8,modelCookie,itemKindRefer,outCookies);
-		System.out.println(itemKinddbody);*/
-    } 
     public static String login() throws Exception{
     	String url = "http://10.134.130.208:8000/prpall/?calogin";
     	String UTF8="utf-8";
     	Map<String, String> outCookies =new HashMap<String, String>();
     	String body1 = get(url,UTF8,null,null,outCookies); 
+    	System.out.println("body1-->"+body1);
     	String userCode ="1299010766";
         org.jsoup.nodes.Document  doc =Jsoup.parse(body1);
         Elements el1 =doc.select("form[id=fm]");
@@ -328,14 +266,63 @@ public class RenBaoLoginA {
         loginParams.put("errorKey", "null");
         
         String loginUrl="https://10.134.130.208:8888"+el1.get(0).attr("action");
-        String body2 = post(loginUrl,loginParams, UTF8,cookies,url);
+        outCookies =new HashMap<String, String>();
+        String body2 = post(loginUrl,loginParams, UTF8,cookies,url,outCookies);
         String ticketText = Jsoup.parse(body2).select("a").text();
         String ticket = ticketText.substring(ticketText.lastIndexOf("=")+1);
-   
+        System.out.println("loginUrl-->"+loginUrl);
         String homePageUrl = "http://10.134.130.208:8000/prpall/index.jsp?calogin&ticket="+ticket;
-        outCookies =new HashMap<String, String>();
         get(homePageUrl,UTF8,"JSESSIONID="+jsessionid+";",null,outCookies);
-        String modelCookie ="JSESSIONID="+jsessionid+";"+toCookiesStr(outCookies);
-        return modelCookie;
+        outCookies.remove("BOCINS_cif_Cookie");
+        String cookie ="JSESSIONID="+jsessionid+";"+toCookiesStr(outCookies);
+        return cookie;
     }
+    public static void main(String[] args) throws Exception {
+    	String cookie = login();
+		String custoUrl = "http://10.134.130.208:8000/prpall/custom/customAmountQueryP.do?_identifyType=01&_insuredName=&_identifyNumber=520203198905015840&_insuredCode=";
+		String ref ="http://10.134.130.208:8000/prpall/business/prepareEdit.do?bizType=PROPOSAL&editType=NEW";
+		String custBody = get(custoUrl, "GBK", cookie,ref, null);
+		System.out.println("custBody-->"+custBody);
+		RelatePeronContent person = JSON.parseObject(custBody, RelatePeronContent.class);
+		String url = person.getData().get(0).getURL();
+		String addCookie = prepareAdd(cookie);
+		//addLogin(addCookie);
+		
+	}
+    public static void loginadd(String cookie) throws Exception, NoSuchAlgorithmException, ClientProtocolException, IOException{
+    	String url = "https://10.134.130.208:8888/casserver/login?service=http%3A%2F%2F10.134.130.208%3A8300%2Fcif%2Fcustomperson%2FcustomPersonStartIntf.do%3FcustomerCName%3D%25D5%25C5%25C1%25A6%26identifyType%3D01%26identifyNumber%3D520203198905015839%26syscode%3Dprpall";
+		String logonbody = get(url, "GBK", cookie,null, null);
+		System.out.println("logonbody-->"+logonbody);
+
+    }
+    public static void startinf(String cookie) throws Exception, NoSuchAlgorithmException, ClientProtocolException, IOException{
+    	String inf = "http://10.134.130.208:8300/cif/customperson/customPersonStartIntf.do?customerCName=%D5%C5%C1%A6&identifyType=01&identifyNumber=520203198905015839&syscode=prpall";
+		Map<String,String> outCookie = new HashMap<String,String>();
+		String infBody = get(inf, "GBK", cookie,null, outCookie);
+		System.out.println("infBody-->"+infBody);
+
+    }
+    public static String  prepareAdd(String cookie) throws Exception, NoSuchAlgorithmException, ClientProtocolException, IOException{
+    	String inf = "http://10.134.130.208:8300/cif/customperson/prepareAdd.do?customerCName=&identifyType=01&identifyNumber=520203198905015847&syscode=prpall";
+		Map<String,String> outCookie = new HashMap<String,String>();
+		String prepareAddBody = get(inf, "GBK", cookie,null, null);
+		//String prepareAddBody = post(inf,new HashMap<String,String>(),"GBK",cookie,null,outCookie);
+		System.out.println("prepareAddBody-->"+prepareAddBody);
+		System.out.println("prepareAddBody cookie-->"+cookie);
+		//return cookie+";"+toCookiesStr(outCookie)+"prpall=1299010766;";
+		return "";
+
+    }
+ 
+    public static void addLogin(String cookie) throws Exception, NoSuchAlgorithmException, ClientProtocolException, IOException{
+    	String addLoginUrl = "https://10.134.130.208:8888/casserver/login?service=http%3A%2F%2F10.134.130.208%3A8300%2Fcif%2Fcustomperson%2FprepareAdd.do%3FcustomerCName%3D%26identifyType%3D01%26identifyNumber%3D520203198905015847%26syscode%3Dprpall";
+		Map<String,String> outCookie = new HashMap<String,String>();
+		String addLoginBody = get(addLoginUrl, "GBK", cookie,null, outCookie);
+		//String prepareAddBody = post(inf,new HashMap<String,String>(),"GBK",cookie,null,outCookie);
+		System.out.println("addLoginBody-->"+addLoginBody);
+		System.out.println("addLoginBody cookie-->"+cookie);
+    	
+    }
+  
+    
 }

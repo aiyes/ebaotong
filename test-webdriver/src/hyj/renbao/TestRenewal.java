@@ -21,7 +21,7 @@ import com.ebtins.dto.open.CarRenewalRes;
  *
  */
 
-public class TestRenewal {
+public class TestRenewal {/*
 	
 	@Test
 	public void testQueryCarModel() throws Exception {
@@ -50,4 +50,4 @@ public class TestRenewal {
 		CarRenewalRes res = rn.getRenewal(req);
 		System.out.println("CarRenewalRes-->"+JSON.toJSONString(res));
 	}
-}
+*/}

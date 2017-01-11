@@ -37,8 +37,12 @@ import ebtins.smart.proxy.company.renbao.dto.RenbaoBiInsure;
 import ebtins.smart.proxy.company.renbao.dto.RenbaoQuoteContent;
 import ebtins.smart.proxy.company.renbao.dto.QuoteSave.QueryPayForContent;
 import ebtins.smart.proxy.company.renbao.dto.QuoteSave.RefreshPlanContent;
+import ebtins.smart.proxy.company.renbao.service.RenbaoQuoteSaveService;
+import ebtins.smart.proxy.company.renbao.service.RenbaoQuoteService;
+import ebtins.smart.proxy.company.renbao.util.RenbaoClientSSLUtil;
 import ebtins.smart.proxy.company.renbao.util.RenbaoConfig;
 import ebtins.smart.proxy.company.renbao.util.RenbaoUtil;
+import ebtins.smart.proxy.conf.Constants;
 import hyj.login.RenBaoLoginA;
 
 /**
@@ -96,25 +100,38 @@ public class Quote {
 	}*/
 	
 	public CarQuoteRes getQuote(CarQuoteReq req) throws Exception{
+		 CarQuoteRes res = new CarQuoteRes();
 		 String cookie = RenBaoLoginA.login();
 		 String prepareEditReferer = "http://10.134.130.208:8000/prpall/menu/showMenu.do?systemCode=prpall&userCode=99355911";
 		 String quoteUrl = "http://10.134.130.208:8000/prpall/business/caculatePremiunForFG.do";
 		 String quoteReferer = "http://10.134.130.208:8000/prpall/business/prepareEdit.do?bizType=PROPOSAL&editType=NEW";
-		 String prepareEditBody = RenBaoLoginA.get(quoteReferer, "GBK", cookie, prepareEditReferer, null);
-		 Document doc = Jsoup.parse(prepareEditBody);
-		 String randomProposalNo = doc.getElementById("randomProposalNo").val();
-		 Map<String,String> checkbfSaveParams = new HashMap<String,String>();
-		 Map<String,String> sumCiParams = new HashMap<String,String>();
-		 Map<String,String> params =getQuoteParam(req,checkbfSaveParams,randomProposalNo);
-		 System.out.println("quote_params-->"+params);
-		 String body = RenBaoLoginA.post(quoteUrl,params,"GBK",cookie,quoteReferer);//保费计算
+		 String randomProposalNo="";//报价单随机号
+		 try {
+			String prepareEditBody = RenbaoClientSSLUtil.get(quoteReferer, "GBK", cookie, prepareEditReferer, null);//加载投保页面
+			randomProposalNo = Jsoup.parse(prepareEditBody).getElementById("randomProposalNo").val();
+		 } catch (Exception e) {
+			 res.getHeader().setResCode(Constants.FAIL);
+			 res.getHeader().setResMsg("投保单录入页面加载错误!");
+			 return res;
+		 }
+		 Map<String,String> checkbfSaveParams = new HashMap<String,String>();//保费计算结果保存检验参数
+		 Map<String,String> sumCiParams = new HashMap<String,String>();//商业险总保费、总净保费、总税额参数
+		 RenbaoQuoteService quoteService = new RenbaoQuoteService();
+		 Map<String,String> params =quoteService.getQuoteParam(req,res,checkbfSaveParams,randomProposalNo,cookie);//保费计算请求参数
+		 if(StringUtil.ObjectToString(res.getHeader().getResCode()).equals(Constants.FAIL))
+			 return res;
+		 String body="";
+		 try {
+			body = RenbaoClientSSLUtil.post(quoteUrl,params,"GBK",cookie,quoteReferer);//保费计算请求
+		 } catch (Exception e) {
+			 res.getHeader().setResCode("11000");
+			 res.getHeader().setResMsg("保费计算错误"+quoteUrl);
+			 return res;
+		 }
 		 RenbaoQuoteContent quoteContent = JSON.parseObject(body,RenbaoQuoteContent.class);
-		 System.out.println("body-->"+body);
-		 System.out.println("quoteContent-->"+JSON.toJSONString(quoteContent));
-		 CarQuoteRes res = getResQuote(req,quoteContent,sumCiParams);//封装报价
-		 System.out.println("renbao quote res-->"+JSON.toJSONString(res));
-		 //params.putAll(saveParams);//添加商业险总保费、总净保费、总税额参数
-		 new QuoteSave().save(params,sumCiParams,checkbfSaveParams,quoteContent,res,quoteReferer,cookie,"");//保存
+		 quoteService.getResQuote(req,res,quoteContent,sumCiParams);//封装报价结果
+		 RenbaoQuoteSaveService saveService = new RenbaoQuoteSaveService();
+		 //saveService.save(params,sumCiParams,checkbfSaveParams,quoteContent,res,quoteReferer,cookie,"");//保存
 		 return res;
 	}
 
@@ -134,10 +151,8 @@ public class Quote {
 		checkbfSaveParams.put("prpCitemCar.runAreaCode",req.getRunAreaCode());//行驶区域11
 		
 		 params.putAll(setCarModelInfo(req));//车型信息
-			//params.putAll();//行驶证及车辆信息
-			//params.putAll();//关系人-投保人、被保人、车主
 		 params.putAll(setKindItemBiCI(req));//商业险、交强险
-		 params.putAll(checkbfSaveParams);//商业险、交强险
+		 params.putAll(checkbfSaveParams);
 		
 		return params;
 	
@@ -160,7 +175,6 @@ public class Quote {
 		   relateMap.put("prpCmain.sumPremium", "");
 		   relateMap.put("prpCmainCI.sumPremium", "");
 		   relateMap.put("prpCmainCommon.DBCFlag", "0");
-		//Map<String,String> params = RenbaoUtil.getValueByClazz1(req.getCarLicenseInfo(), relateMap);
 		return relateMap;
 	}
 	

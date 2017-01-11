@@ -17,6 +17,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
@@ -49,10 +50,13 @@ import com.ebtins.open.common.constant.CarInsuranceConstant;
 import com.ebtins.open.common.util.IDCardUtil;
 import com.ebtins.open.common.util.TimeUtil;
 
+import ebtins.smart.proxy.company.huaan.dto.IndustryCodeContent;
+import ebtins.smart.proxy.company.huaan.service.HuaanQuoteService;
 import ebtins.smart.proxy.company.huaan.util.HuaanConfig;
 import ebtins.smart.proxy.company.huaan.util.HuaanUtil;
 import ebtins.smart.proxy.company.huaan.util.HuaanVerifyQuoteReqUtil;
 import ebtins.smart.proxy.conf.Constants;
+import ebtins.smart.proxy.util.ClientSSLUtil;
 import newQuote.AttributeVo;
 import newQuote.DataObjVo;
 import newQuote.ReqDwData;
@@ -223,9 +227,10 @@ public class HttpReq {
 	 * @date 2016年10月9日 上午10:37:47
 	 */
     public static CarQuoteRes quoteReq(String post1String,CarQuoteReq req) throws Exception {
+    	
     	CarQuoteRes res = new CarQuoteRes();
     	Map<String,Object> params = HuaanConfig.getParamMap();
-    	post1String = getNewDwData(req,res,post1String,params);
+    	HuaanQuoteService service = new HuaanQuoteService();
     	if(res.getHeader().getResCode()!=null&&res.getHeader().getResCode().equals(Constants.FAIL)){
     		return res;
     	}
@@ -258,6 +263,16 @@ public class HttpReq {
         String referer=(String) postStrObj.get("referer");
         String post1_cust_data=(String) postStrObj.get("post1_cust_data");
         String post2_cust_data=(String) postStrObj.get("post2_cust_data");
+        
+        String industryCode = getIndustyCode(UTF8,cookies,req);
+		if(StringUtils.isBlank(industryCode)){
+			res.getHeader().setResCode(Constants.FAIL);
+		    res.getHeader().setResMsg("行业车型编码为空");
+		}
+		req.getExt().put("Vhl.CIndustryModelCode", industryCode);//行业车型编码 
+		System.out.println("industryCode-->"+industryCode);
+		post1String = service.getNewDwData(req,res,post1String,params);
+		
         
         String post2String = "",msg1="";
         /**
@@ -292,16 +307,48 @@ public class HttpReq {
         //String get2_string =get((String) postStrObj.get("get2_url"),"UTF-8",cookies);
         
         //post：保存（第四次post请求）  
-        String post4String = HuaanUtil.getNewPostByBackContent(post3Content,4);
+      /*  String post4String = HuaanUtil.getNewPostByBackContent(post3Content,4);
         String save_cust_data=(String) postStrObj.get("save_cust_data");
         System.out.println("请求报文4--->"+post4String);
         String post4Content = post(qModelUrl,UTF8,cookies,referer,save_cust_data,post4String,"savePlyApp");
-        System.out.println("返回报文4--->"+post4Content);
+        System.out.println("返回报文4--->"+post4Content);*/
          
         System.out.println("-----------返回报文----------");	
         return  getResData(req,post3Content,msg1+";"+msg2);
        
     }
+  //获取行业车型编码
+  	public static String getIndustyCode(String encoding,String cookie,CarQuoteReq req){
+  		Map<String, String> queryModelParams = new HashMap<String, String>();
+  		queryModelParams.put("ACTION_HANDLE", "perform");
+  		queryModelParams.put("BEAN_HANDLE", "baseAction");
+  		queryModelParams.put("BIZ_SYNCH_CONTINUE", "false");
+  		queryModelParams.put("BIZ_SYNCH_DESC", "");
+  		queryModelParams.put("BIZ_SYNCH_LOCK", "");
+  		queryModelParams.put("BIZ_SYNCH_MODULE_CODE", "");
+  		queryModelParams.put("BIZ_SYNCH_NO", "");
+  		queryModelParams.put("CODE_TYPE", "UTF-8");
+  		queryModelParams.put("CUST_DATA", "CProdNo=0380###CDptCde=01###CCarCde="+req.getCarModelInfo().getModelCode());
+  		queryModelParams.put("DW_DATA","%3Cdata%3E%3CdataObjs%20type%3D%22ONE_SELECT%22%20%20dwid%3D%22dwid0.1497965520716409%22%20rsCount%3D%225%22%20pageSize%3D%228%22%20pageNo%3D%221%22%20pageCount%3D%221%22%20dwName%3D%22quickapp.quick_vehicle_DW%22%20difFlag%3D%22false%22%2F%3E%3Cfilters%20colsInOneRow%3D%222%22%20dwName%3D%22quickapp.quick_vehicle_DW%22%3E%3Cfilter%20isGroupBegin%3D%22true%22%20isGroupEnd%3D%22true%22%20isHidden%3D%22false%22%20isRowBegin%3D%22true%22%20name%3D%22null%22%20width%3D%22150%22%2F%3E%3Cfilter%20checkType%3D%22Text%22%20cols%3D%221%22%20dataType%3D%22STRING%22%20dateFormat%3D%22yyyy-MM-dd%20HH%3Amm%22%20defaultValue%3D%22%22%20isGroupBegin%3D%22true%22%20isGroupEnd%3D%22true%22%20isHidden%3D%22false%22%20isRowBegin%3D%22false%22%20isRowEnd%3D%22false%22%20name%3D%22VehicleId%22%20operator%3D%22*%22%20rows%3D%221%22%20tableName%3D%22%22%20title%3D%22%E8%BD%A6%E5%9E%8B%E4%BB%A3%E7%A0%81%22%20type%3D%22input%22%20width%3D%22190%22%20issExtValue%3D%22%22%2F%3E%3Cfilter%20checkType%3D%22Text%22%20cols%3D%221%22%20dataType%3D%22STRING%22%20dateFormat%3D%22yyyy-MM-dd%20HH%3Amm%22%20defaultValue%3D%22%22%20isGroupBegin%3D%22true%22%20isGroupEnd%3D%22true%22%20isHidden%3D%22false%22%20isRowEnd%3D%22true%22%20name%3D%22VehicleName%22%20operator%3D%22*%22%20rows%3D%221%22%20tableName%3D%22%22%20title%3D%22%E8%BD%A6%E5%9E%8B%E5%90%8D%E7%A7%B0%22%20type%3D%22input%22%20width%3D%22190%22%20issExtValue%3D%22%22%2F%3E%3Cfilter%20isGroupBegin%3D%22true%22%20isGroupEnd%3D%22true%22%20isHidden%3D%22false%22%20isRowBegin%3D%22true%22%20name%3D%22null%22%20width%3D%22150%22%2F%3E%3Cfilter%20checkType%3D%22Text%22%20cols%3D%221%22%20dataType%3D%22STRING%22%20dateFormat%3D%22yyyy-MM-dd%20HH%3Amm%22%20defaultValue%3D%22%22%20isGroupBegin%3D%22true%22%20isGroupEnd%3D%22true%22%20isHidden%3D%22false%22%20isReadOnly%3D%22true%22%20isRowBegin%3D%22false%22%20isRowEnd%3D%22false%22%20name%3D%22VINNo%22%20operator%3D%22*%22%20rows%3D%221%22%20tableName%3D%22%22%20title%3D%22%E8%AF%86%E5%88%AB%E4%BB%A3%E7%A0%81%2F%E8%BD%A6%E6%9E%B6%E5%8F%B7%22%20type%3D%22input%22%20width%3D%22190%22%20issExtValue%3D%22%22%2F%3E%3Cfilter%20checkType%3D%22Text%22%20cols%3D%221%22%20dataType%3D%22STRING%22%20dateFormat%3D%22yyyy-MM-dd%20HH%3Amm%22%20defaultValue%3D%2201980003%22%20isGroupBegin%3D%22true%22%20isGroupEnd%3D%22true%22%20isHidden%3D%22false%22%20isRowEnd%3D%22true%22%20name%3D%22CDptCde%22%20operator%3D%22*%22%20rows%3D%221%22%20tableName%3D%22%E6%89%BF%E4%BF%9D%E6%9C%BA%E6%9E%84%22%20title%3D%22%22%20type%3D%22hidden%22%20width%3D%22190%22%2F%3E%3C%2Ffilters%3E%3C%2Fdata%3E");
+  		queryModelParams.put("HELPCONTROLMETHOD", "common");
+  		queryModelParams.put("SCENE", "UNDEFINED");
+  		queryModelParams.put("SERVICE_MOTHOD", "getInduVhlCde");
+  		queryModelParams.put("SERVICE_NAME", "quickAppQueryBizAction");
+  		queryModelParams.put("SERVICE_TYPE", "ACTION_SERVIC");
+
+  		String rString="";
+  		try {
+  			rString = post("https://webpolicy.sinosafe.com.cn/pcis/actionservice.ai", queryModelParams, encoding, cookie, "https://webpolicy.sinosafe.com.cn/pcis/policy/universal/quickapp/jsp/open_quick_vehicle.jsp?dptcode=01980003&vhlName=&vin_no=&prodNo=0380");
+  		} catch (Exception e) {
+  			e.printStackTrace();
+  		}
+  		IndustryCodeContent content = JSON.parseObject(rString,IndustryCodeContent.class);
+  		String industryCode="";
+  		if(content.getCUST_DATA()!=null){
+  			industryCode =content.getCUST_DATA().getCModelCde();
+  		}
+  		return industryCode;
+  	}
     /**
      * @Description: TODO(封装报价返回结果)
      * @param carQuoteReq 请求对象
@@ -530,7 +577,7 @@ public class HttpReq {
     
 	public static String getNewDwData(CarQuoteReq req,CarQuoteRes res,String originalDwData,Map<String,Object> postParams){
 		
-		/*postParams.put("Base.COrigType","0");//原方案续保
+		postParams.put("Base.COrigType","0");//原方案续保
 		postParams.put("JQ_Base.CRenewMrk","0");//续保标志(交)
 		postParams.put("Base.CProdNo","0380");//
 		postParams.put("JQ_Base.NAmt","122000.00");//
@@ -616,7 +663,8 @@ public class HttpReq {
 		postParams.put("Applicant.CAppCde","032814984");//投保人代码
 		postParams.put("Applicant.CTfiAppTyp","378001");//类别
 		postParams.put("Applicant.CCountry","193001");//国籍
-*/		
+	
+		
 		//--------------CarOrderRelationInfoVo--投保人信息-----------
 		//orderId
 		//relationType 关系人类型 1-投保人;2-被保人;3-收件人
@@ -696,10 +744,10 @@ public class HttpReq {
 			res.getHeader().setResMsg(req.getCarModelInfo().getCarVehicleType()+":车辆种类不能识别!");
 		}
 		postParams.put("Vhl.CVhlSubTyp",carType);//车辆种类----carVehicleType 车辆种类:1为客车，2为货车，3为特种车
-		String carTypeCode =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getCarTypeCode().get(req.getCarModelInfo().getCarTypeCode()));
+		String carTypeCode =com.ebtins.open.common.util.StringUtil.ObjectToString(HuaanConfig.getCarTypeCode().get(req.getCarModelInfo().getCarVehicleTypeCode()));
 		if("".equals(carTypeCode)){
 			res.getHeader().setResCode(Constants.FAIL);
-			res.getHeader().setResMsg(req.getCarModelInfo().getCarTypeCode()+":车辆类型代码不能识别!");
+			res.getHeader().setResMsg(req.getCarModelInfo().getCarVehicleTypeCode()+":车辆类型代码不能识别!");
 		}
 		//postParams.put("Vhl.CVhlTyp",carTypeCode);//车辆类型---carVehicleTypeCode 车辆类型  6座以下 6-10座，6座以上
 		postParams.put("Vhl.CVhlTyp",344001);
